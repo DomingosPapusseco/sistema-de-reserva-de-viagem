@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Ango Reserva | Sistema de Reservas Inter-provinciais</title>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        :root {
+            --navy: #0f172a;
+            /* Azul Petróleo */
+            --orange: #f97316;
+            /* Laranja */
+            --orange-dark: #ea580c;
+            --bg-page: #f8fafc;
+            /* Cinza Ultra-claro */
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 0.9rem;
+        }
+
+        /* Typography */
+        h1,
+        h2,
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .navbar {
+            background: var(--navy);
+            height: 75px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--orange);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo span {
+            color: var(--white);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #cbd5e1;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--orange);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-entrar {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-entrar:hover {
+            color: var(--orange);
+        }
+
+        .btn-cadastrar {
+            background: var(--orange);
+            color: var(--white);
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-cadastrar:hover {
+            background: var(--orange-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Slider Hero */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--white);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.3), rgba(15, 23, 42, 0.8));
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            padding: 0 20px;
+        }
+
+        .slide-content h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        /* Filter Bar */
+        .filter-section {
+            position: relative;
+            margin-top: -40px;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            padding: 0 5%;
+        }
+
+        .filter-bar {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.9rem;
+            color: var(--navy);
+        }
+
+        /* Grid */
+        .main-container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 5%;
+        }
+
+        .viagens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid #f1f5f9;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--orange);
+        }
+
+        .card-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .card-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+        }
+
+        .card-price {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--orange);
+            margin-top: 0.5rem;
+        }
+
+        .btn-reserve {
+            background: var(--orange);
+            color: var(--white);
+            border: none;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-reserve:hover {
+            background: var(--orange-dark);
+        }
+
+        .card-ad {
+            background: #fff7ed;
+            border: 2px dashed var(--orange);
+            text-align: center;
+            justify-content: center;
+        }
+
+        .card-ad h3 {
+            color: var(--orange);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-ad img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        /* Modal Professional */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--white);
+            width: 100%;
+            max-width: 400px;
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            position: relative;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .modal-form input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        #signup-extra-fields {
+            display: contents;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            color: var(--text-muted);
+            border: none;
+            background: none;
+        }
+
+        .modal-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .modal-footer a {
+            color: var(--orange);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .footer {
+            background: var(--navy);
+            color: var(--white);
+            padding: 4rem 10% 2rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-col h4 {
+            margin-bottom: 1.5rem;
+            color: var(--orange);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .footer-col a {
+            color: #94a3b8;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .footer-col a:hover {
+            color: var(--white);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #1e293b;
+            color: #475569;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="navbar">
+        <a href="#" class="logo">
+            <i data-lucide="navigation"></i>
+            Ango <span>Reserva</span>
+        </a>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#">Início</a></li>
+                <li><a href="#sobre-nos">Sobre Nós</a></li>
+            </ul>
+        </nav>
+        <div class="auth-buttons" id="auth-section">
+            <a href="javascript:void(0)" class="btn-entrar" onclick="toggleModal(true, 'login')">Entrar</a>
+            <a href="javascript:void(0)" class="btn-cadastrar" onclick="toggleModal(true, 'signup')">Cadastrar-se</a>
+        </div>
+    </header>
+
+    <section class="hero-slider">
+        <div class="slider-container">
+            <div class="slide active" style="background-image: url('imagens/quedadecalandula.png')">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <h1>Descubra as Quedas de Kalandula</h1>
+                    <p>Uma das maravilhas naturais de Malanje espera por si.</p>
+                </div>
+            </div>
+            <div class="slide" style="background-image: url('imagens/baiaazula.png')">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <h1>Sol e Mar na Baía Azul</h1>
+                    <p>O paraíso em Benguela a um clique de distância.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="filter-section">
+        <div class="filter-bar" id="search-controls">
+            <div class="filter-group">
+                <label><i data-lucide="map-pin" size="14"></i> Destino</label>
+                <select id="filter-dest" onchange="applyFilters()">
+                    <option value="todos">Todas as Províncias</option>
+                    <option value="Benguela">Benguela</option>
+                    <option value="Huambo">Huambo</option>
+                    <option value="Lubango">Lubango</option>
+                    <option value="Malanje">Malanje</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label><i data-lucide="banknote" size="14"></i> Preço Máximo</label>
+                <input type="number" id="filter-price" placeholder="Ex: 20000 Kz" oninput="applyFilters()">
+            </div>
+        </div>
+    </section>
+
+    <main class="main-container">
+        <section id="viagens" class="viagens-grid">
+            <!-- Dynamically Rendered -->
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleModal(false)"><i data-lucide="x" size="20"></i></button>
+            <h2 id="modal-title">Entrar na Ango Reserva</h2>
+            <div id="modal-body">
+                <form class="modal-form" onsubmit="handleAuth(event)">
+                    <input type="email" placeholder="E-mail" required>
+                    <input type="password" placeholder="Palavra-passe" required>
+                    <div id="signup-extra-fields"></div>
+                    <button type="submit" class="btn-reserve" id="modal-submit-btn">Aceder</button>
+                </form>
+                <div class="modal-footer" id="modal-toggle-footer">
+                    Ainda não tem conta? <a href="javascript:void(0)"
+                        onclick="toggleModal(true, 'signup')">Cadastre-se</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" id="footer">
+        <div class="footer-grid">
+            <div class="footer-col" id="sobre-nos">
+                <div class="logo"><i data-lucide="navigation"></i> Ango <span>Reserva</span></div>
+                <p style="color: #94a3b8; margin-top: 1rem;">O seu portal líder em mobilidade inter-provincial.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Links Rápidos</h4>
+                <a href="#viagens">Destinos</a>
+                <a href="#">Privacidade</a>
+            </div>
+            <div class="footer-col">
+                <h4>Suporte</h4>
+                <a href="#">Contacto</a>
+                <a href="#">FAQ</a>
+            </div>
+        </div>
+        <div class="footer-bottom">© 2026 Ango Reserva. Todos os direitos reservados.</div>
+    </footer>
+
+    <script>
+        const state = {
+            isLoggedIn: false,
+            currentSlide: 0,
+            trips: [
+                { id: 1, type: 'trip', province: 'Benguela', price: 12500, time: '08:30', company: 'Macon' },
+                { id: 2, type: 'ad', title: 'Promoção Benguela', desc: 'Reserve ida e volta e ganhe 15% de desconto na Baía Azul.', image: 'imagens/benguela_promo.png' },
+                { id: 3, type: 'trip', province: 'Malanje', price: 9500, time: '07:00', company: 'AngoReal' },
+                { id: 4, type: 'trip', province: 'Huambo', price: 14000, time: '06:15', company: 'RealExpress' },
+                { id: 5, type: 'ad', title: 'Visite o Huambo', desc: 'Pacotes especiais para grupos no Jardim da Cultura.', image: 'imagens/huambo_promo.png' },
+                { id: 6, type: 'trip', province: 'Lubango', price: 18500, time: '09:45', company: 'Macon' }
+            ]
+        };
+
+        function applyFilters() { renderTrips(); }
+
+        function renderTrips() {
+            const grid = document.getElementById('viagens');
+            const dest = document.getElementById('filter-dest').value;
+            const price = document.getElementById('filter-price').value;
+
+            const filtered = state.trips.filter(item => {
+                if (item.type === 'ad') return dest === 'todos';
+                const matchDest = dest === 'todos' || item.province === dest;
+                const matchPrice = !price || item.price <= parseInt(price);
+                return matchDest && matchPrice;
+            });
+
+            grid.innerHTML = filtered.map(item => {
+                if (item.type === 'ad') return `
+                    <div class="card card-ad">
+                        <img src="${item.image}" alt="${item.title}" onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=400'">
+                        <h3>${item.title}</h3>
+                        <p>${item.desc}</p>
+                    </div>`;
+                return `
+                    <div class="card">
+                        <h3>${item.province}</h3>
+                        <div class="card-details">
+                            <div class="card-info"><i data-lucide="bus" size="14"></i> ${item.company}</div>
+                            <div class="card-info"><i data-lucide="clock" size="14"></i> ${item.time}</div>
+                        </div>
+                        <div class="card-price">${item.price.toLocaleString('pt-AO')} Kz</div>
+                        <button class="btn-reserve" onclick="reservar(${item.id})">Reservar</button>
+                    </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function toggleModal(show, mode = 'login') {
+            const modal = document.getElementById('auth-modal');
+            const title = document.getElementById('modal-title');
+            const submitBtn = document.getElementById('modal-submit-btn');
+            const footer = document.getElementById('modal-toggle-footer');
+            const extraFields = document.getElementById('signup-extra-fields');
+
+            if (mode === 'signup') {
+                title.innerText = "Criar Conta na Ango Reserva";
+                submitBtn.innerText = "Cadastrar";
+                extraFields.innerHTML = `<input type="password" placeholder="Confirmar Palavra-passe" required>`;
+                footer.innerHTML = `Já tem conta? <a href="javascript:void(0)" onclick="toggleModal(true, 'login')">Entre aqui</a>`;
+            } else {
+                title.innerText = "Entrar na Ango Reserva";
+                submitBtn.innerText = "Aceder";
+                extraFields.innerHTML = '';
+                footer.innerHTML = `Não tem conta? <a href="javascript:void(0)" onclick="toggleModal(true, 'signup')">Cadastre-se</a>`;
+            }
+
+            modal.style.display = show ? 'flex' : 'none';
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            state.isLoggedIn = true;
+            document.getElementById('auth-section').innerHTML = `<span style="color: white; font-weight: 700;">Olá, Viajante</span>`;
+            toggleModal(false);
+        }
+
+        function reservar(id) {
+            if (!state.isLoggedIn) toggleModal(true);
+            else alert("Reserva solicitada com sucesso!");
+        }
+
+        function startSlider() {
+            const slides = document.querySelectorAll('.slide');
+            setInterval(() => {
+                slides[state.currentSlide].classList.remove('active');
+                state.currentSlide = (state.currentSlide + 1) % slides.length;
+                slides[state.currentSlide].classList.add('active');
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTrips();
+            startSlider();
+        });
+    </script>
+</body>
+
+</html>
