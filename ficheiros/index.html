@@ -19,8 +19,9 @@
         </a>
         <nav>
             <ul class="nav-links">
-                <li><a href="#">Início</a></li>
-                <li><a href="#sobre-nos">Sobre Nós</a></li>
+                <li><a href="index.html">Início</a></li>
+                <li><a href="sobre.html">Sobre Nós</a></li>
+                <li><a href="#usuarios-list">Usuários</a></li>
                 <li><a href="#faq">FAQ</a></li>
             </ul>
         </nav>
@@ -32,20 +33,7 @@
 
     <section class="hero-slider">
         <div class="slider-container">
-            <div class="slide active" style="background-image: url('imagens/quedadecalandula.png')">
-                <div class="slide-overlay"></div>
-                <div class="slide-content">
-                    <h1>Descubra as Quedas de Kalandula</h1>
-                    <p>Uma das maravilhas naturais de Malanje espera por si.</p>
-                </div>
-            </div>
-            <div class="slide" style="background-image: url('imagens/baiaazula.png')">
-                <div class="slide-overlay"></div>
-                <div class="slide-content">
-                    <h1>Sol e Mar na Baía Azul</h1>
-                    <p>O paraíso em Benguela a um clique de distância.</p>
-                </div>
-            </div>
+            <!-- Renderizado dinamicamente via JS -->
         </div>
     </section>
 
@@ -117,7 +105,7 @@
             </div>
             <div class="footer-col">
                 <h4>Links Rápidos</h4>
-                <a href="#viagens">Destinos</a>
+                <a href="sobre.html">Sobre Nós</a>
                 <a href="#">Privacidade</a>
             </div>
             <div class="footer-col">
@@ -133,8 +121,29 @@
         const state = {
             isLoggedIn: false,
             currentSlide: 0,
-            trips: JSON.parse(localStorage.getItem('ango_viagens')) || []
+            trips: JSON.parse(localStorage.getItem('ango_viagens')) || [],
+            slides: JSON.parse(localStorage.getItem('ango_slides')) || [
+                { id: 1, title: 'Descubra as Quedas de Kalandula', text: 'Uma das maravilhas naturais de Malanje espera por si.', img: 'imagens/quedadecalandula.png' },
+                { id: 2, title: 'Sol e Mar na Baía Azul', text: 'O paraíso em Benguela a um clique de distância.', img: 'imagens/baiaazula.png' }
+            ]
         };
+
+        function renderHero() {
+            const container = document.querySelector('.slider-container');
+            if (state.slides.length === 0) {
+                container.innerHTML = '<div class="slide active"><div class="slide-content"><h1>Bem-vindo à Ango Reserva</h1></div></div>';
+                return;
+            }
+            container.innerHTML = state.slides.map((s, index) => `
+                <div class="slide ${index === 0 ? 'active' : ''}" style="background-image: url('${s.img}')">
+                    <div class="slide-overlay"></div>
+                    <div class="slide-content">
+                        <h1>${s.title}</h1>
+                        <p>${s.text}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
 
         function applyFilters() { renderTrips(); }
 
@@ -180,6 +189,20 @@
             lucide.createIcons();
         }
 
+        function renderUsers() {
+            const grid = document.getElementById('users-grid');
+            const users = JSON.parse(localStorage.getItem('ango_users')) || [];
+            grid.innerHTML = users.map(u => `
+                <div class="card" style="text-align: center; padding: 1.5rem;">
+                    <i data-lucide="user" size="32" style="margin: 0 auto 1rem;"></i>
+                    <h4 style="color: var(--primary-color);">${u.nome || u.cliente}</h4>
+                    <p style="font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.5rem;">ID: #${u.id.toString().slice(-6)}</p>
+                    <p style="font-size: 0.8rem; color: #64748b;">Membro Ango Reserva</p>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
         function toggleModal(show, mode = 'login') {
             const modal = document.getElementById('auth-modal');
             const title = document.getElementById('modal-title');
@@ -204,8 +227,43 @@
 
         function handleAuth(e) {
             e.preventDefault();
+            const email = e.target.querySelector('input[type="email"]').value;
+            const password = e.target.querySelector('input[type="password"]').value;
+
+            // Validação de Administrador
+            if (email === 'admin@angoreserva.com' && password === 'admin123') {
+                sessionStorage.setItem('adminSession', Date.now());
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('ango_users')) || [];
+            let loggedUser;
+
+            // Se for Cadastro, salva o usuário no sistema para o Admin gerir
+            const isSignup = document.getElementById('modal-title').innerText.includes("Criar");
+            if (isSignup) {
+                loggedUser = {
+                    id: Date.now(),
+                    nome: email.split('@')[0], // Nome simplificado baseado no email
+                    email: email,
+                    data: new Date().toLocaleDateString('pt-AO'),
+                    status: 'ativo'
+                };
+                users.push(loggedUser);
+                localStorage.setItem('ango_users', JSON.stringify(users));
+            } else {
+                // Login Simples: Procura o usuário pelo email
+                loggedUser = users.find(u => u.email === email);
+                if (!loggedUser) {
+                    alert("Usuário não encontrado. Por favor, cadastre-se.");
+                    return;
+                }
+            }
+
+            sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
             state.isLoggedIn = true;
-            document.getElementById('auth-section').innerHTML = `<span style="color: white; font-weight: 700;">Olá, Viajante</span>`;
+            document.getElementById('auth-section').innerHTML = `<span style="color: white; font-weight: 700;">Olá, ${loggedUser.nome}</span>`;
             toggleModal(false);
         }
 
@@ -223,11 +281,13 @@
 
             const destino = viagemSelecionada.province || viagemSelecionada.rota.split(' - ')[1];
             const preco = viagemSelecionada.preco || viagemSelecionada.price.toLocaleString('pt-AO') + " Kz";
+            const user = JSON.parse(sessionStorage.getItem('loggedUser'));
 
             // 3. Criação do Objeto de Reserva: Estrutura compatível com admin.html
             const novaReserva = {
                 id: "#" + Math.floor(100 + Math.random() * 900), // Ex: #432
-                cliente: "Usuário Logado", 
+                userId: user.id,
+                cliente: user.nome, 
                 destino: destino,
                 preco: preco,
                 status: 'pending', 
@@ -256,6 +316,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             renderTrips();
+            renderUsers();
             startSlider();
         });
     </script>
