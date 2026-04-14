@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ango Reserva | Painel do Administrador</title>
+    <link rel="stylesheet" href="admin.css">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i data-lucide="navigation"></i>
+                Ango <span>Admin</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#dashboard" class="active" data-section="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+                    <li><a href="#viagens" data-section="viagens"><i data-lucide="bus"></i> Gestão de Viagens</a></li>
+                    <li><a href="#agentes" data-section="agentes"><i data-lucide="users"></i> Agentes</a></li>
+                    <li><a href="#usuarios" data-section="usuarios"><i data-lucide="user"></i> Usuários</a></li>
+                    <li><a href="#relatorios" data-section="relatorios"><i data-lucide="bar-chart-2"></i> Relatórios</a></li>
+                    <li><a href="#configuracoes" data-section="configuracoes"><i data-lucide="settings"></i> Configurações</a></li>
+                    <li><a href="index.html"><i data-lucide="log-out"></i> Sair</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <h1>Painel do Administrador</h1>
+                <div class="user-profile">
+                    <i data-lucide="circle-user"></i>
+                    <span id="admin-name-display">Admin</span>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="summary-cards">
+                    <div class="card summary-card">
+                        <div class="card-icon"><i data-lucide="ticket"></i></div>
+                        <div class="card-content">
+                            <p class="card-label">Total de Reservas</p>
+                            <p class="card-value">1,250</p>
+                        </div>
+                    </div>
+                    <div class="card summary-card">
+                        <div class="card-icon"><i data-lucide="banknote"></i></div>
+                        <div class="card-content">
+                            <p class="card-label">Receita do Mês</p>
+                            <p class="card-value">2.5M Kz</p>
+                        </div>
+                    </div>
+                    <div class="card summary-card">
+                        <div class="card-icon"><i data-lucide="user-check"></i></div>
+                        <div class="card-content">
+                            <p class="card-label">Agentes Ativos</p>
+                            <p class="card-value">15</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-bookings">
+                    <h2>Últimas Reservas</h2>
+                    
+                    <!-- Melhoria de UX: Campo de Busca -->
+                    <div class="search-container" style="margin-bottom: 20px; display: flex; gap: 10px;">
+                        <i data-lucide="search" style="position: absolute; margin: 10px; color: var(--secondary-color);"></i>
+                        <input type="text" id="adminSearch" placeholder="Buscar por cliente ou destino..." 
+                               style="padding: 10px 10px 10px 35px; width: 100%; border-radius: 5px; border: 1px solid var(--border-color);">
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="bookingsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Destino</th>
+                                    <th>Preço</th>
+                                    <th>Status</th>
+                                    <th>Agente</th>
+                                    <th>Data</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Renderizado dinamicamente via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other Sections Placeholders -->
+            <section id="viagens" class="content-section">
+                <div class="section-header">
+                    <h2>Gestão de Viagens</h2>
+                    <button class="btn-reserve" style="padding: 10px 20px;" onclick="openTripModal()"><i data-lucide="plus"></i> Adicionar Nova Rota</button>
+                </div>
+                <div class="table-responsive card" style="padding: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rota</th>
+                                <th>Empresa</th>
+                                <th>Horário</th>
+                                <th>Lugares</th>
+                                <th>Preço</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="viagensTableBody">
+                            <!-- Dinâmico -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="agentes" class="content-section">
+                <div class="section-header">
+                    <h2>Agentes Ativos</h2>
+                    <button class="btn-reserve" style="padding: 10px 20px;" onclick="openAgentModal()">
+                        <i data-lucide="user-plus"></i> Novo Agente
+                    </button>
+                </div>
+                <div class="table-responsive card" style="padding: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Agente</th>
+                                <th>Total Vendas</th>
+                                <th>Comissão (%)</th>
+                                <th>Status</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentesTableBody">
+                            <!-- Dinâmico -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="usuarios" class="content-section">
+                <div class="section-header">
+                    <h2>Usuários do Sistema</h2>
+                    <div id="user-summary" style="display: flex; gap: 20px;">
+                        <div class="card" style="padding: 10px 20px; text-align: center;">
+                            <small class="card-label">Total Clientes</small>
+                            <p class="card-value" id="total-users" style="font-size: 1.2rem;">0</p>
+                        </div>
+                        <div class="card" style="padding: 10px 20px; text-align: center;">
+                            <small class="card-label">Ativos Hoje</small>
+                            <p class="card-value" id="active-today" style="font-size: 1.2rem; color: var(--success-color);">0</p>
+                        </div>
+                    </div>
+                    <div class="search-container" style="width: 300px;">
+                        <i data-lucide="search" style="position: absolute; margin: 10px; color: var(--secondary-color);"></i>
+                        <input type="text" id="userSearchInput" placeholder="Buscar por nome ou email..." 
+                               style="padding: 10px 10px 10px 35px; width: 100%; border-radius: 5px; border: 1px solid var(--border-color);">
+                    </div>
+                </div>
+                <div class="table-responsive card" style="padding: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Avatar</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Status</th>
+                                <th>Reservas</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTableBody">
+                            <!-- Dinâmico -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="relatorios" class="content-section">
+                <div class="section-header">
+                    <h2>Relatórios Financeiros</h2>
+                    <div class="report-actions" style="display: flex; gap: 10px;">
+                        <input type="date" style="padding: 8px; border-radius: 5px; border: 1px solid var(--border-color);">
+                        <button class="btn-action btn-edit" onclick="exportar('PDF')"><i data-lucide="file-text"></i> PDF</button>
+                        <button class="btn-action btn-edit" onclick="exportar('Excel')"><i data-lucide="download"></i> Excel</button>
+                    </div>
+                </div>
+                <div class="summary-cards mini-cards">
+                    <div class="card summary-card" style="padding: 15px;">
+                        <div class="card-content">
+                            <p class="card-label">Receita Total</p>
+                            <p class="card-value" style="font-size: 1.4rem;">15.4M Kz</p>
+                        </div>
+                    </div>
+                    <div class="card summary-card" style="padding: 15px;">
+                        <div class="card-content">
+                            <p class="card-label">Lucro Mensal</p>
+                            <p class="card-value" style="font-size: 1.4rem;">1.2M Kz</p>
+                        </div>
+                    </div>
+                    <div class="card summary-card" style="padding: 15px;">
+                        <div class="card-content">
+                            <p class="card-label">Crescimento</p>
+                            <p class="card-value" style="font-size: 1.4rem; color: var(--success-color);">+12.5%</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="configuracoes" class="content-section">
+                <h2>Configurações</h2>
+                <div class="card" style="padding: 25px;">
+                    <div class="config-tabs">
+                        <div class="config-tab active" onclick="switchTab('profile')">Perfil do Admin</div>
+                        <div class="config-tab" onclick="switchTab('fees')">Taxas do Sistema</div>
+                        <div class="config-tab" onclick="switchTab('notifications')">Notificações</div>
+                    </div>
+                    
+                    <div id="profile" class="tab-content active">
+                        <form id="profileForm" class="modal-form" style="margin-top: 20px; max-width: 500px;">
+                            <div class="filter-group">
+                                <label>Nome do Administrador</label>
+                                <input type="text" id="cfg-name" placeholder="Nome do Admin">
+                            </div>
+                            <div class="filter-group">
+                                <label>Email de Contacto</label>
+                                <input type="email" id="cfg-email" placeholder="Email">
+                            </div>
+                            <div class="filter-group">
+                                <label>Nova Senha</label>
+                                <input type="password" id="cfg-pass" placeholder="Deixe em branco para manter">
+                            </div>
+                            <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar Alterações</button>
+                        </form>
+                    </div>
+
+                    <div id="fees" class="tab-content">
+                        <form id="financialForm" class="modal-form" style="margin-top: 20px; max-width: 500px;">
+                            <div class="filter-group">
+                                <label>% Comissão dos Agentes</label>
+                                <input type="number" id="fee-commission" placeholder="Ex: 5">
+                            </div>
+                            <div class="filter-group">
+                                <label>Valor Taxa de Serviço (Kz)</label>
+                                <input type="number" id="fee-service" placeholder="Ex: 500">
+                            </div>
+                            <div class="filter-group">
+                                <label>Moeda do Sistema</label>
+                                <input type="text" id="sys-currency" value="Kz" readonly>
+                            </div>
+                            <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Guardar Taxas</button>
+                        </form>
+                    </div>
+
+                    <div id="notifications" class="tab-content">
+                        <form id="notifForm" class="modal-form" style="margin-top: 20px;">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="notif-new-booking">
+                                <label>Alertar sobre novas reservas</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="notif-agent-login">
+                                <label>Notificar quando agentes entrarem</label>
+                            </div>
+                            <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar Notificações</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para Adicionar/Editar Rota -->
+    <div id="tripModal" class="admin-modal">
+        <div class="modal-card">
+            <h3 id="tripModalTitle">Adicionar Nova Rota</h3>
+            <form id="tripForm">
+                <input type="hidden" id="trip-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Origem</label>
+                        <input type="text" id="trip-origin" required placeholder="Ex: Luanda">
+                    </div>
+                    <div class="form-group">
+                        <label>Destino</label>
+                        <input type="text" id="trip-dest" required placeholder="Ex: Benguela">
+                    </div>
+                    <div class="form-group">
+                        <label>Empresa</label>
+                        <input type="text" id="trip-company" required placeholder="Macon">
+                    </div>
+                    <div class="form-group">
+                        <label>Horário</label>
+                        <input type="time" id="trip-time" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Lugares (Total)</label>
+                        <input type="number" id="trip-seats" required value="45">
+                    </div>
+                    <div class="form-group">
+                        <label>Preço (Kz)</label>
+                        <input type="text" id="trip-price" required placeholder="12.500">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-action" onclick="closeTripModal()">Cancelar</button>
+                    <button type="submit" class="btn-reserve" style="padding: 8px 20px;">Salvar Rota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Agentes -->
+    <div id="agentModal" class="admin-modal">
+        <div class="modal-card">
+            <h3 id="agentModalTitle">Novo Agente</h3>
+            <form id="agentForm">
+                <input type="hidden" id="agent-id">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="agent-name" required>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Comissão (%)</label>
+                        <input type="number" id="agent-comm" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Status Inicial</label>
+                        <input type="text" id="agent-status" value="Ativo" readonly>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-action" onclick="closeAgentModal()">Cancelar</button>
+                    <button type="submit" class="btn-reserve" style="padding: 8px 20px;">Salvar Agente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Histórico do Usuário -->
+    <div id="historyModal" class="admin-modal">
+        <div class="modal-card">
+            <h3>Histórico de Reservas</h3>
+            <div id="historyList" style="margin-top: 1rem; max-height: 300px; overflow-y: auto;"></div>
+            <div class="modal-actions">
+                <button class="btn-action" onclick="document.getElementById('historyModal').classList.remove('active')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DADOS INICIAIS ---
+        const initialReservas = [
+            { id: "#001", cliente: "João Silva", destino: "Benguela", preco: "12.500 Kz", status: "pending", agente: "Maria Santos", data: "2023-10-26" },
+            { id: "#002", cliente: "Ana Costa", destino: "Malanje", preco: "9.500 Kz", status: "confirmed", agente: "Pedro Almeida", data: "2023-10-25" }
+        ];
+
+        const initialTrips = [
+            { id: 1, rota: "Luanda - Benguela", empresa: "Macon", horario: "08:30", lugares: "14/45", preco: "12.500 Kz", status: "active" },
+            { id: 2, rota: "Luanda - Malanje", empresa: "AngoReal", horario: "07:00", lugares: "22/45", preco: "9.500 Kz", status: "active" }
+        ];
+
+        const initialAgentes = [
+            { id: 101, nome: "Maria Santos", vendas: "450.000 Kz", comissao: 5, status: "Ativo" },
+            { id: 102, nome: "Pedro Almeida", vendas: "320.500 Kz", comissao: 5, status: "Offline" }
+        ];
+
+        const initialUsers = [
+            { id: 1, nome: "João Silva", email: "joao@exemplo.com", telefone: "+244 923 000 000", reservas: 12, status: 'active' },
+            { id: 2, nome: "Ana Costa", email: "ana.c@angola.ao", telefone: "+244 912 111 222", reservas: 5, status: 'active' },
+            { id: 3, nome: "Carlos Pereira", email: "cpereira@test.com", telefone: "+244 933 444 555", reservas: 0, status: 'inactive' },
+            { id: 4, nome: "Usuário Logado", email: "viajante@angoreserva.ao", telefone: "+244 900 000 000", reservas: 1, status: 'active' }
+        ];
+
+        // --- UTILITÁRIOS ---
+        const getData = (key, fallback) => JSON.parse(localStorage.getItem(key)) || fallback;
+        const saveData = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+        const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+        // Função para alternar entre seções (Navegação Dinâmica)
+        function showSection(sectionId) {
+            // 1. Esconde todas as seções
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // 2. Remove classe active de todos os links da sidebar
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // 3. Mostra a seção alvo e destaca o link
+            const targetSection = document.getElementById(sectionId);
+            const targetLink = document.querySelector(`[data-section="${sectionId}"]`);
+
+            if (targetSection) {
+                targetSection.classList.add('active');
+                if (targetLink) targetLink.classList.add('active');
+                
+                // Persistência: Salva a última seção visitada
+                sessionStorage.setItem('activeAdminSection', sectionId);
+            }
+        }
+
+        // Adiciona eventos de clique nos links da sidebar
+        document.querySelectorAll('.sidebar-nav a[data-section]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('data-section');
+                showSection(sectionId);
+            });
+        });
+
+        // --- RENDERIZAÇÃO ---
+
+        function renderReservas(filter = "") {
+            const tableBody = document.getElementById('tableBody');
+            const reservas = getData('ango_reservas', initialReservas);
+            tableBody.innerHTML = reservas
+                .filter(r => r.cliente.toLowerCase().includes(filter.toLowerCase()) || 
+                             r.destino.toLowerCase().includes(filter.toLowerCase()))
+                .map(r => `
+                    <tr>
+                        <td>${r.id}</td>
+                        <td>${r.cliente}</td>
+                        <td>${r.destino}</td>
+                        <td>${r.preco}</td>
+                        <td><span class="status-${r.status}">${capitalize(r.status)}</span></td>
+                        <td>${r.agente}</td>
+                        <td>${r.data}</td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="proximoStatus('${r.id}')">
+                                <i data-lucide="refresh-cw"></i> Status
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deletarReserva('${r.id}')">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            lucide.createIcons();
+        }
+
+        function renderViagens() {
+            const tbody = document.getElementById('viagensTableBody');
+            const viagens = getData('ango_viagens', initialTrips);
+            tbody.innerHTML = viagens.map(v => `
+                <tr class="${v.status === 'paused' ? 'row-paused' : ''}">
+                    <td>${v.rota}</td>
+                    <td>${v.empresa}</td>
+                    <td>${v.horario}</td>
+                    <td>${v.lugares}</td>
+                    <td>${v.preco}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="editTrip(${v.id})"><i data-lucide="edit-3"></i></button>
+                        <button class="btn-action btn-delete" onclick="togglePauseTrip(${v.id})" title="Pausar/Ativar">
+                            <i data-lucide="${v.status === 'paused' ? 'play-circle' : 'pause-circle'}"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderAgentes() {
+            const tbody = document.getElementById('agentesTableBody');
+            const agentes = getData('ango_agentes', initialAgentes);
+            tbody.innerHTML = agentes.map(a => `
+                <tr>
+                    <td>${a.nome}</td>
+                    <td>${a.vendas}</td>
+                    <td>${a.comissao}</td>
+                    <td><span class="${a.status === 'Ativo' ? 'status-confirmed' : 'status-canceled'}">${a.status}</span></td>
+                    <td><button class="btn-action btn-edit" onclick="managePermissions(${a.id})"><i data-lucide="shield-check"></i> Permissões</button></td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderUsuarios(filter = "") {
+            const tbody = document.getElementById('usuariosTableBody');
+            const users = getData('ango_users', initialUsers);
+            const filtered = users.filter(u => u.nome.toLowerCase().includes(filter.toLowerCase()) || u.email.toLowerCase().includes(filter.toLowerCase()));
+            
+            // Atualizar Sumário
+            document.getElementById('total-users').innerText = users.length;
+            const hoje = new Date().toLocaleDateString('pt-AO');
+            const reservasHoje = getData('ango_reservas', initialReservas).filter(r => r.data === hoje);
+            document.getElementById('active-today').innerText = [...new Set(reservasHoje.map(r => r.cliente))].length;
+
+            tbody.innerHTML = filtered.map(u => `
+                <tr class="${u.status === 'inactive' ? 'row-inactive' : ''}">
+                    <td><i data-lucide="circle-user" style="color: var(--secondary-color);"></i></td>
+                    <td>${u.nome}</td>
+                    <td>${u.email}</td>
+                    <td>${u.telefone}</td>
+                    <td>${u.reservas}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="viewHistory('${u.nome}')" title="Histórico"><i data-lucide="history"></i></button>
+                        <button class="btn-action btn-delete" onclick="toggleUserStatus(${u.id})" title="Banir/Ativar"><i data-lucide="slash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        window.deletarUsuario = (id) => {
+            if(confirm("Tem certeza que deseja excluir este usuário permanentemente?")) {
+                const users = getData('ango_users', initialUsers).filter(u => u.id !== id);
+                saveData('ango_users', users);
+                renderUsuarios();
+            }
+        };
+
+        window.viewHistory = (clienteNome) => {
+            const reservas = getData('ango_reservas', initialReservas);
+            const userBookings = reservas.filter(r => r.cliente === clienteNome);
+            const list = document.getElementById('historyList');
+            
+            if(userBookings.length === 0) {
+                list.innerHTML = "<p style='color: var(--secondary-color);'>Nenhuma reserva encontrada.</p>";
+            } else {
+                list.innerHTML = `
+                    <table style="width:100%; font-size: 0.8rem;">
+                        <thead><tr><th>ID</th><th>Destino</th><th>Data</th></tr></thead>
+                        <tbody>${userBookings.map(b => `<tr><td>${b.id}</td><td>${b.destino}</td><td>${b.data}</td></tr>`).join('')}</tbody>
+                    </table>`;
+            }
+            document.getElementById('historyModal').classList.add('active');
+        };
+
+        window.toggleUserStatus = (id) => {
+            const users = getData('ango_users', initialUsers);
+            const u = users.find(user => user.id === id);
+            u.status = u.status === 'active' ? 'inactive' : 'active';
+            saveData('ango_users', users);
+            renderUsuarios();
+        };
+
+        // --- LÓGICA DE NEGÓCIO ---
+
+        // CRUD Viagens
+        window.openTripModal = () => {
+            document.getElementById('tripForm').reset();
+            document.getElementById('trip-id').value = '';
+            document.getElementById('tripModalTitle').innerText = 'Adicionar Nova Rota';
+            document.getElementById('tripModal').classList.add('active');
+        };
+
+        window.closeTripModal = () => document.getElementById('tripModal').classList.remove('active');
+
+        document.getElementById('tripForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('trip-id').value;
+            const viagens = getData('ango_viagens', initialTrips);
+            
+            const tripData = {
+                id: id ? parseInt(id) : Date.now(),
+                rota: `${document.getElementById('trip-origin').value} - ${document.getElementById('trip-dest').value}`,
+                empresa: document.getElementById('trip-company').value,
+                horario: document.getElementById('trip-time').value,
+                lugares: `0/${document.getElementById('trip-seats').value}`,
+                preco: document.getElementById('trip-price').value + " Kz",
+                status: "active"
+            };
+
+            if (id) {
+                const index = viagens.findIndex(v => v.id === parseInt(id));
+                viagens[index] = tripData;
+            } else {
+                viagens.push(tripData);
+            }
+
+            saveData('ango_viagens', viagens);
+            renderViagens();
+            closeTripModal();
+        });
+
+        window.editTrip = (id) => {
+            const viagens = getData('ango_viagens', initialTrips);
+            const v = viagens.find(v => v.id === id);
+            const [origem, destino] = v.rota.split(' - ');
+            
+            document.getElementById('trip-id').value = v.id;
+            document.getElementById('trip-origin').value = origem;
+            document.getElementById('trip-dest').value = destino;
+            document.getElementById('trip-company').value = v.empresa;
+            document.getElementById('trip-time').value = v.horario;
+            document.getElementById('trip-price').value = v.preco.replace(' Kz', '');
+            
+            document.getElementById('tripModalTitle').innerText = 'Editar Rota';
+            document.getElementById('tripModal').classList.add('active');
+        };
+
+        window.togglePauseTrip = (id) => {
+            const viagens = getData('ango_viagens', initialTrips);
+            const v = viagens.find(v => v.id === id);
+            v.status = v.status === 'active' ? 'paused' : 'active';
+            saveData('ango_viagens', viagens);
+            renderViagens();
+        };
+
+        // CRUD Agentes
+        window.openAgentModal = () => {
+            document.getElementById('agentForm').reset();
+            document.getElementById('agentModal').classList.add('active');
+        };
+        window.closeAgentModal = () => document.getElementById('agentModal').classList.remove('active');
+
+        document.getElementById('agentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const agentes = getData('ango_agentes', initialAgentes);
+            const novo = {
+                id: Date.now(),
+                nome: document.getElementById('agent-name').value,
+                vendas: "0 Kz",
+                comissao: document.getElementById('agent-comm').value,
+                status: "Ativo"
+            };
+            agentes.push(novo);
+            saveData('ango_agentes', agentes);
+            renderAgentes();
+            closeAgentModal();
+        });
+
+        window.deletarAgente = (id) => {
+            if(confirm("Remover este agente do sistema?")) {
+                const agentes = getData('ango_agentes', initialAgentes).filter(a => a.id !== id);
+                saveData('ango_agentes', agentes);
+                renderAgentes();
+            }
+        };
+
+        window.updateAgenteComm = (id, val) => {
+            const agentes = getData('ango_agentes', initialAgentes);
+            const a = agentes.find(a => a.id === id);
+            a.comissao = val;
+            saveData('ango_agentes', agentes);
+        };
+
+        // Agentes
+        window.managePermissions = (id) => {
+            const agentes = getData('ango_agentes', initialAgentes);
+            const a = agentes.find(a => a.id === id);
+            const novoStatus = a.status === 'Ativo' ? 'Suspenso' : 'Ativo';
+            if(confirm(`Deseja alterar o status de ${a.nome} para ${novoStatus}?`)) {
+                a.status = novoStatus;
+                saveData('ango_agentes', agentes);
+                renderAgentes();
+            }
+        };
+
+        // Gerenciamento de Status: Cicla entre os estados principais
+        window.proximoStatus = (id) => {
+            let reservas = getData('ango_reservas', initialReservas);
+            const r = reservas.find(res => res.id === id);
+            if (r.status === 'pending') r.status = 'confirmed';
+            else if (r.status === 'confirmed') r.status = 'completed';
+            else r.status = 'pending';
+            saveData('ango_reservas', reservas);
+            renderReservas();
+        };
+
+        window.deletarReserva = (id) => {
+            if(confirm("Deseja excluir esta reserva?")) {
+                const reservas = getData('ango_reservas', initialReservas).filter(r => r.id !== id);
+                saveData('ango_reservas', reservas);
+                renderReservas();
+            }
+        };
+
+        // Relatórios e Configurações
+        window.exportar = (type) => alert(`Gerando arquivo ${type}...\nO download começará em instantes.`);
+
+        async function applySpinner(btn, callback) {
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Processando...`;
+            await new Promise(r => setTimeout(r, 1000)); // Simula delay
+            callback();
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        }
+
+        document.getElementById('configForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            applySpinner(this.querySelector('button'), () => {
+                const config = {
+                    name: document.getElementById('cfg-name').value,
+                    email: document.getElementById('cfg-email').value
+                };
+                saveData('ango_config', config);
+                document.querySelector('.user-profile span').innerText = config.name;
+                alert('Perfil atualizado!');
+            });
+        });
+
+        document.getElementById('feesForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            applySpinner(this.querySelector('button'), () => {
+                const fees = {
+                    commission: document.getElementById('fee-commission').value,
+                    service: document.getElementById('fee-service').value
+                };
+                saveData('ango_fees', fees);
+                alert('Taxas de BI guardadas com sucesso!');
+            });
+        });
+
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        };
+
+        // Event Listeners
+        document.getElementById('adminSearch').addEventListener('input', (e) => {
+            renderReservas(e.target.value);
+        });
+
+        document.getElementById('userSearchInput').addEventListener('input', (e) => {
+            renderUsuarios(e.target.value);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar tudo
+            renderReservas();
+            renderViagens();
+            renderAgentes();
+            renderUsuarios();
+
+            // Carregar Configurações Centralizadas
+            const settings = getData('ango_settings', {
+                profile: { name: 'Super Admin', email: 'admin@angoreserva.com' },
+                financial: { commission: 5, serviceFee: 500, currency: 'Kz' },
+                notifications: { booking: true, agentLogin: false }
+            });
+            
+            document.getElementById('cfg-name').value = settings.profile.name;
+            document.getElementById('cfg-email').value = settings.profile.email;
+            document.querySelector('.user-profile span').innerText = settings.profile.name;
+            document.getElementById('fee-commission').value = settings.financial.commission;
+            document.getElementById('fee-service').value = settings.financial.serviceFee;
+            document.getElementById('notif-new-booking').checked = settings.notifications.booking;
+            document.getElementById('notif-agent-login').checked = settings.notifications.agentLogin;
+            
+            // Persistência: Recupera a última seção aberta ao recarregar
+            const lastSection = sessionStorage.getItem('activeAdminSection') || 'dashboard';
+            showSection(lastSection);
+        });
+    </script>
+</body>
+</html>

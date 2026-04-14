@@ -191,8 +191,37 @@
         }
 
         function reservar(id) {
-            if (!state.isLoggedIn) toggleModal(true);
-            else alert("Reserva solicitada com sucesso!");
+            // 1. Validação de Login: Se não estiver logado, abre o modal em modo 'login'
+            if (!state.isLoggedIn) {
+                toggleModal(true, 'login');
+                return;
+            }
+            
+            // 2. Identificação da Viagem: Localiza os dados no state.trips
+            const viagemSelecionada = state.trips.find(t => t.id === id);
+            
+            if (!viagemSelecionada) return;
+
+            // 3. Criação do Objeto de Reserva: Estrutura compatível com admin.html
+            const novaReserva = {
+                id: "#" + Math.floor(100 + Math.random() * 900), // Ex: #432
+                cliente: "Usuário Logado", 
+                destino: viagemSelecionada.province,
+                preco: viagemSelecionada.price.toLocaleString('pt-AO') + " Kz",
+                status: 'pending', 
+                agente: viagemSelecionada.company,
+                data: new Date().toLocaleDateString('pt-AO')
+            };
+
+            // 4. Persistência de Dados: Sincronização via localStorage
+            const reservasAtuais = JSON.parse(localStorage.getItem('ango_reservas')) || [];
+            reservasAtuais.push(novaReserva);
+            localStorage.setItem('ango_reservas', JSON.stringify(reservasAtuais));
+
+            // 5. Feedback e Fechamento
+            alert(`Reserva para ${viagemSelecionada.province} solicitada com sucesso!\nVocê pode acompanhar o status no Painel Admin.`);
+            
+            // Opcional: Se houvesse um modal de confirmação de reserva, fecharíamos aqui
         }
 
         function startSlider() {
