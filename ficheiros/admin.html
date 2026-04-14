@@ -7,6 +7,122 @@
     <link rel="stylesheet" href="admin.css">
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Melhorias na estilização das Configurações */
+        .config-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .config-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .config-tab {
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid transparent;
+        }
+        .config-tab:hover {
+            background: #f1f5f9;
+        }
+        .config-tab.active {
+            background: white;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .danger-zone {
+            margin-top: 40px;
+            padding: 20px;
+            border: 1px dashed #ef4444;
+            border-radius: 10px;
+            background: #fef2f2;
+        }
+        .danger-zone h4 { color: #b91c1c; margin-bottom: 10px; }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* Estilização refinada para os formulários de configuração */
+        .config-main {
+            background: #fff;
+            padding: 5px 20px;
+        }
+        .config-main .filter-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .config-main label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .config-main input:not([type="checkbox"]) {
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .config-main input:focus {
+            background: #fff;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+            outline: none;
+        }
+        .config-main .checkbox-group {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+        .config-main .checkbox-group:hover {
+            border-color: var(--primary-color);
+            background: #fff;
+        }
+        .config-main .checkbox-group label {
+            text-transform: none;
+            letter-spacing: normal;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+        .config-main .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -19,8 +135,6 @@
                 <ul>
                     <li><a href="#dashboard" class="active" data-section="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
                     <li><a href="#viagens" data-section="viagens"><i data-lucide="bus"></i> Gestão de Viagens</a></li>
-                    <li><a href="#agentes" data-section="agentes"><i data-lucide="users"></i> Agentes</a></li>
-                    <li><a href="#usuarios" data-section="usuarios"><i data-lucide="user"></i> Usuários</a></li>
                     <li><a href="#relatorios" data-section="relatorios"><i data-lucide="bar-chart-2"></i> Relatórios</a></li>
                     <li><a href="#configuracoes" data-section="configuracoes"><i data-lucide="settings"></i> Configurações</a></li>
                     <li><a href="index.html"><i data-lucide="log-out"></i> Sair</a></li>
@@ -41,24 +155,24 @@
             <section id="dashboard" class="content-section active">
                 <div class="summary-cards">
                     <div class="card summary-card">
+                        <div class="card-icon"><i data-lucide="bus"></i></div>
+                        <div class="card-content">
+                            <p class="card-label">Total de Viagens</p>
+                            <p class="card-value" id="dash-total-viagens">0</p>
+                        </div>
+                    </div>
+                    <div class="card summary-card">
                         <div class="card-icon"><i data-lucide="ticket"></i></div>
                         <div class="card-content">
                             <p class="card-label">Total de Reservas</p>
-                            <p class="card-value">1,250</p>
+                            <p class="card-value" id="dash-total-reservas">0</p>
                         </div>
                     </div>
                     <div class="card summary-card">
                         <div class="card-icon"><i data-lucide="banknote"></i></div>
                         <div class="card-content">
                             <p class="card-label">Receita do Mês</p>
-                            <p class="card-value">2.5M Kz</p>
-                        </div>
-                    </div>
-                    <div class="card summary-card">
-                        <div class="card-icon"><i data-lucide="user-check"></i></div>
-                        <div class="card-content">
-                            <p class="card-label">Agentes Ativos</p>
-                            <p class="card-value">15</p>
+                            <p class="card-value" id="dash-total-receita">0 Kz</p>
                         </div>
                     </div>
                 </div>
@@ -82,7 +196,6 @@
                                     <th>Destino</th>
                                     <th>Preço</th>
                                     <th>Status</th>
-                                    <th>Agente</th>
                                     <th>Data</th>
                                     <th>Ações</th>
                                 </tr>
@@ -120,71 +233,6 @@
                 </div>
             </section>
 
-            <section id="agentes" class="content-section">
-                <div class="section-header">
-                    <h2>Agentes Ativos</h2>
-                    <button class="btn-reserve" style="padding: 10px 20px;" onclick="openAgentModal()">
-                        <i data-lucide="user-plus"></i> Novo Agente
-                    </button>
-                </div>
-                <div class="table-responsive card" style="padding: 20px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Agente</th>
-                                <th>Total Vendas</th>
-                                <th>Comissão (%)</th>
-                                <th>Status</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="agentesTableBody">
-                            <!-- Dinâmico -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section id="usuarios" class="content-section">
-                <div class="section-header">
-                    <h2>Usuários do Sistema</h2>
-                    <div id="user-summary" style="display: flex; gap: 20px;">
-                        <div class="card" style="padding: 10px 20px; text-align: center;">
-                            <small class="card-label">Total Clientes</small>
-                            <p class="card-value" id="total-users" style="font-size: 1.2rem;">0</p>
-                        </div>
-                        <div class="card" style="padding: 10px 20px; text-align: center;">
-                            <small class="card-label">Ativos Hoje</small>
-                            <p class="card-value" id="active-today" style="font-size: 1.2rem; color: var(--success-color);">0</p>
-                        </div>
-                    </div>
-                    <div class="search-container" style="width: 300px;">
-                        <i data-lucide="search" style="position: absolute; margin: 10px; color: var(--secondary-color);"></i>
-                        <input type="text" id="userSearchInput" placeholder="Buscar por nome ou email..." 
-                               style="padding: 10px 10px 10px 35px; width: 100%; border-radius: 5px; border: 1px solid var(--border-color);">
-                    </div>
-                </div>
-                <div class="table-responsive card" style="padding: 20px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Avatar</th>
-                                <th>Nome</th>
-                                <th>Email</th>
-                                <th>Telefone</th>
-                                <th>Status</th>
-                                <th>Reservas</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usuariosTableBody">
-                            <!-- Dinâmico -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
             <section id="relatorios" class="content-section">
                 <div class="section-header">
                     <h2>Relatórios Financeiros</h2>
@@ -198,19 +246,19 @@
                     <div class="card summary-card" style="padding: 15px;">
                         <div class="card-content">
                             <p class="card-label">Receita Total</p>
-                            <p class="card-value" style="font-size: 1.4rem;">15.4M Kz</p>
+                            <p class="card-value" id="report-total-receita" style="font-size: 1.4rem;">0 Kz</p>
                         </div>
                     </div>
                     <div class="card summary-card" style="padding: 15px;">
                         <div class="card-content">
                             <p class="card-label">Lucro Mensal</p>
-                            <p class="card-value" style="font-size: 1.4rem;">1.2M Kz</p>
+                            <p class="card-value" id="report-monthly-profit" style="font-size: 1.4rem;">0 Kz</p>
                         </div>
                     </div>
                     <div class="card summary-card" style="padding: 15px;">
                         <div class="card-content">
                             <p class="card-label">Crescimento</p>
-                            <p class="card-value" style="font-size: 1.4rem; color: var(--success-color);">+12.5%</p>
+                            <p class="card-value" style="font-size: 1.4rem; color: var(--success-color);">0%</p>
                         </div>
                     </div>
                 </div>
@@ -219,60 +267,66 @@
             <section id="configuracoes" class="content-section">
                 <h2>Configurações</h2>
                 <div class="card" style="padding: 25px;">
-                    <div class="config-tabs">
-                        <div class="config-tab active" onclick="switchTab('profile')">Perfil do Admin</div>
-                        <div class="config-tab" onclick="switchTab('fees')">Taxas do Sistema</div>
-                        <div class="config-tab" onclick="switchTab('notifications')">Notificações</div>
-                    </div>
-                    
-                    <div id="profile" class="tab-content active">
-                        <form id="profileForm" class="modal-form" style="margin-top: 20px; max-width: 500px;">
-                            <div class="filter-group">
-                                <label>Nome do Administrador</label>
-                                <input type="text" id="cfg-name" placeholder="Nome do Admin">
+                    <div class="config-container">
+                        <div class="config-sidebar">
+                            <div class="config-tab active" onclick="switchTab('profile')"><i data-lucide="user"></i> Perfil do Admin</div>
+                            <div class="config-tab" onclick="switchTab('fees')"><i data-lucide="calculator"></i> Taxas do Sistema</div>
+                            <div class="config-tab" onclick="switchTab('notifications')"><i data-lucide="bell"></i> Notificações</div>
+                            <div class="config-tab" onclick="switchTab('system')"><i data-lucide="database"></i> Dados do Sistema</div>
+                        </div>
+                        
+                        <div class="config-main">
+                            <div id="profile" class="tab-content active">
+                                <h3 style="margin-bottom: 25px; color: var(--text-dark);">Informações de Perfil</h3>
+                                <form id="profileForm" class="modal-form" style="max-width: 500px;">
+                                    <div class="filter-group">
+                                        <label>Nome do Administrador</label>
+                                        <input type="text" id="cfg-name" placeholder="Nome do Admin">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Email de Contacto</label>
+                                        <input type="email" id="cfg-email" placeholder="Email">
+                                    </div>
+                                    <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Atualizar Perfil</button>
+                                </form>
                             </div>
-                            <div class="filter-group">
-                                <label>Email de Contacto</label>
-                                <input type="email" id="cfg-email" placeholder="Email">
-                            </div>
-                            <div class="filter-group">
-                                <label>Nova Senha</label>
-                                <input type="password" id="cfg-pass" placeholder="Deixe em branco para manter">
-                            </div>
-                            <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar Alterações</button>
-                        </form>
-                    </div>
 
-                    <div id="fees" class="tab-content">
-                        <form id="financialForm" class="modal-form" style="margin-top: 20px; max-width: 500px;">
-                            <div class="filter-group">
-                                <label>% Comissão dos Agentes</label>
-                                <input type="number" id="fee-commission" placeholder="Ex: 5">
+                            <div id="fees" class="tab-content">
+                                <h3 style="margin-bottom: 25px; color: var(--text-dark);">Taxas e Moeda</h3>
+                                <form id="financialForm" class="modal-form" style="max-width: 500px;">
+                                    <div class="filter-group">
+                                        <label>Valor Taxa de Serviço (Kz)</label>
+                                        <input type="number" id="fee-service" placeholder="Ex: 500">
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Moeda do Sistema</label>
+                                        <input type="text" id="sys-currency" value="Kz" readonly>
+                                    </div>
+                                    <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar Taxas</button>
+                                </form>
                             </div>
-                            <div class="filter-group">
-                                <label>Valor Taxa de Serviço (Kz)</label>
-                                <input type="number" id="fee-service" placeholder="Ex: 500">
-                            </div>
-                            <div class="filter-group">
-                                <label>Moeda do Sistema</label>
-                                <input type="text" id="sys-currency" value="Kz" readonly>
-                            </div>
-                            <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Guardar Taxas</button>
-                        </form>
-                    </div>
 
-                    <div id="notifications" class="tab-content">
-                        <form id="notifForm" class="modal-form" style="margin-top: 20px;">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="notif-new-booking">
-                                <label>Alertar sobre novas reservas</label>
+                            <div id="notifications" class="tab-content">
+                                <h3 style="margin-bottom: 25px; color: var(--text-dark);">Preferências de Sistema</h3>
+                                <form id="notifForm" class="modal-form">
+                                    <div class="checkbox-group" style="margin-bottom: 20px;">
+                                        <input type="checkbox" id="notif-new-booking">
+                                        <label for="notif-new-booking">Alertar sobre novas reservas por e-mail</label>
+                                    </div>
+                                    <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar Preferências</button>
+                                </form>
                             </div>
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="notif-agent-login">
-                                <label>Notificar quando agentes entrarem</label>
+
+                            <div id="system" class="tab-content">
+                                <div class="danger-zone">
+                                    <h4 style="display: flex; align-items: center; gap: 8px;"><i data-lucide="alert-triangle"></i> Zona de Perigo</h4>
+                                    <p style="margin: 10px 0 20px 0; color: #64748b; font-size: 0.9rem;">Esta ação apagará todas as reservas, usuários e rotas criadas. Não é possível reverter.</p>
+                                    <button class="btn-danger" onclick="resetSystemData()">
+                                        <i data-lucide="trash-2" size="16"></i> Limpar Todos os Dados
+                                    </button>
+                                </div>
                             </div>
-                            <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar Notificações</button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -319,34 +373,6 @@
         </div>
     </div>
 
-    <!-- Modal para Agentes -->
-    <div id="agentModal" class="admin-modal">
-        <div class="modal-card">
-            <h3 id="agentModalTitle">Novo Agente</h3>
-            <form id="agentForm">
-                <input type="hidden" id="agent-id">
-                <div class="form-group">
-                    <label>Nome Completo</label>
-                    <input type="text" id="agent-name" required>
-                </div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Comissão (%)</label>
-                        <input type="number" id="agent-comm" value="5">
-                    </div>
-                    <div class="form-group">
-                        <label>Status Inicial</label>
-                        <input type="text" id="agent-status" value="Ativo" readonly>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-action" onclick="closeAgentModal()">Cancelar</button>
-                    <button type="submit" class="btn-reserve" style="padding: 8px 20px;">Salvar Agente</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Modal de Histórico do Usuário -->
     <div id="historyModal" class="admin-modal">
         <div class="modal-card">
@@ -360,27 +386,8 @@
 
     <script>
         // --- DADOS INICIAIS ---
-        const initialReservas = [
-            { id: "#001", cliente: "João Silva", destino: "Benguela", preco: "12.500 Kz", status: "pending", agente: "Maria Santos", data: "2023-10-26" },
-            { id: "#002", cliente: "Ana Costa", destino: "Malanje", preco: "9.500 Kz", status: "confirmed", agente: "Pedro Almeida", data: "2023-10-25" }
-        ];
-
-        const initialTrips = [
-            { id: 1, rota: "Luanda - Benguela", empresa: "Macon", horario: "08:30", lugares: "14/45", preco: "12.500 Kz", status: "active" },
-            { id: 2, rota: "Luanda - Malanje", empresa: "AngoReal", horario: "07:00", lugares: "22/45", preco: "9.500 Kz", status: "active" }
-        ];
-
-        const initialAgentes = [
-            { id: 101, nome: "Maria Santos", vendas: "450.000 Kz", comissao: 5, status: "Ativo" },
-            { id: 102, nome: "Pedro Almeida", vendas: "320.500 Kz", comissao: 5, status: "Offline" }
-        ];
-
-        const initialUsers = [
-            { id: 1, nome: "João Silva", email: "joao@exemplo.com", telefone: "+244 923 000 000", reservas: 12, status: 'active' },
-            { id: 2, nome: "Ana Costa", email: "ana.c@angola.ao", telefone: "+244 912 111 222", reservas: 5, status: 'active' },
-            { id: 3, nome: "Carlos Pereira", email: "cpereira@test.com", telefone: "+244 933 444 555", reservas: 0, status: 'inactive' },
-            { id: 4, nome: "Usuário Logado", email: "viajante@angoreserva.ao", telefone: "+244 900 000 000", reservas: 1, status: 'active' }
-        ];
+        const initialReservas = [];
+        const initialTrips = [];
 
         // --- UTILITÁRIOS ---
         const getData = (key, fallback) => JSON.parse(localStorage.getItem(key)) || fallback;
@@ -426,6 +433,23 @@
         function renderReservas(filter = "") {
             const tableBody = document.getElementById('tableBody');
             const reservas = getData('ango_reservas', initialReservas);
+            const viagens = getData('ango_viagens', initialTrips);
+            
+            // Atualizar Estatísticas do Dashboard
+            document.getElementById('dash-total-reservas').innerText = reservas.length;
+            document.getElementById('dash-total-viagens').innerText = viagens.length;
+            const receitaTotal = reservas.reduce((acc, r) => acc + (parseInt(r.preco.replace(/\D/g, '')) || 0), 0);
+            document.getElementById('dash-total-receita').innerText = receitaTotal.toLocaleString('pt-AO') + " Kz";
+
+            if (reservas.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: var(--secondary-color);">Nenhum dado registado</td></tr>';
+                return;
+            }
+            
+            // Atualizar Relatórios
+            if(document.getElementById('report-total-receita')) 
+                document.getElementById('report-total-receita').innerText = receitaTotal.toLocaleString('pt-AO') + " Kz";
+
             tableBody.innerHTML = reservas
                 .filter(r => r.cliente.toLowerCase().includes(filter.toLowerCase()) || 
                              r.destino.toLowerCase().includes(filter.toLowerCase()))
@@ -436,7 +460,6 @@
                         <td>${r.destino}</td>
                         <td>${r.preco}</td>
                         <td><span class="status-${r.status}">${capitalize(r.status)}</span></td>
-                        <td>${r.agente}</td>
                         <td>${r.data}</td>
                         <td>
                             <button class="btn-action btn-edit" onclick="proximoStatus('${r.id}')">
@@ -454,6 +477,12 @@
         function renderViagens() {
             const tbody = document.getElementById('viagensTableBody');
             const viagens = getData('ango_viagens', initialTrips);
+
+            if (viagens.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--secondary-color);">Nenhum dado registado</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = viagens.map(v => `
                 <tr class="${v.status === 'paused' ? 'row-paused' : ''}">
                     <td>${v.rota}</td>
@@ -463,89 +492,12 @@
                     <td>${v.preco}</td>
                     <td>
                         <button class="btn-action btn-edit" onclick="editTrip(${v.id})"><i data-lucide="edit-3"></i></button>
-                        <button class="btn-action btn-delete" onclick="togglePauseTrip(${v.id})" title="Pausar/Ativar">
-                            <i data-lucide="${v.status === 'paused' ? 'play-circle' : 'pause-circle'}"></i>
-                        </button>
+                        <button class="btn-action btn-delete" onclick="deletarViagem(${v.id})"><i data-lucide="trash-2"></i></button>
                     </td>
                 </tr>
             `).join('');
             lucide.createIcons();
         }
-
-        function renderAgentes() {
-            const tbody = document.getElementById('agentesTableBody');
-            const agentes = getData('ango_agentes', initialAgentes);
-            tbody.innerHTML = agentes.map(a => `
-                <tr>
-                    <td>${a.nome}</td>
-                    <td>${a.vendas}</td>
-                    <td>${a.comissao}</td>
-                    <td><span class="${a.status === 'Ativo' ? 'status-confirmed' : 'status-canceled'}">${a.status}</span></td>
-                    <td><button class="btn-action btn-edit" onclick="managePermissions(${a.id})"><i data-lucide="shield-check"></i> Permissões</button></td>
-                </tr>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        function renderUsuarios(filter = "") {
-            const tbody = document.getElementById('usuariosTableBody');
-            const users = getData('ango_users', initialUsers);
-            const filtered = users.filter(u => u.nome.toLowerCase().includes(filter.toLowerCase()) || u.email.toLowerCase().includes(filter.toLowerCase()));
-            
-            // Atualizar Sumário
-            document.getElementById('total-users').innerText = users.length;
-            const hoje = new Date().toLocaleDateString('pt-AO');
-            const reservasHoje = getData('ango_reservas', initialReservas).filter(r => r.data === hoje);
-            document.getElementById('active-today').innerText = [...new Set(reservasHoje.map(r => r.cliente))].length;
-
-            tbody.innerHTML = filtered.map(u => `
-                <tr class="${u.status === 'inactive' ? 'row-inactive' : ''}">
-                    <td><i data-lucide="circle-user" style="color: var(--secondary-color);"></i></td>
-                    <td>${u.nome}</td>
-                    <td>${u.email}</td>
-                    <td>${u.telefone}</td>
-                    <td>${u.reservas}</td>
-                    <td>
-                        <button class="btn-action btn-edit" onclick="viewHistory('${u.nome}')" title="Histórico"><i data-lucide="history"></i></button>
-                        <button class="btn-action btn-delete" onclick="toggleUserStatus(${u.id})" title="Banir/Ativar"><i data-lucide="slash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        window.deletarUsuario = (id) => {
-            if(confirm("Tem certeza que deseja excluir este usuário permanentemente?")) {
-                const users = getData('ango_users', initialUsers).filter(u => u.id !== id);
-                saveData('ango_users', users);
-                renderUsuarios();
-            }
-        };
-
-        window.viewHistory = (clienteNome) => {
-            const reservas = getData('ango_reservas', initialReservas);
-            const userBookings = reservas.filter(r => r.cliente === clienteNome);
-            const list = document.getElementById('historyList');
-            
-            if(userBookings.length === 0) {
-                list.innerHTML = "<p style='color: var(--secondary-color);'>Nenhuma reserva encontrada.</p>";
-            } else {
-                list.innerHTML = `
-                    <table style="width:100%; font-size: 0.8rem;">
-                        <thead><tr><th>ID</th><th>Destino</th><th>Data</th></tr></thead>
-                        <tbody>${userBookings.map(b => `<tr><td>${b.id}</td><td>${b.destino}</td><td>${b.data}</td></tr>`).join('')}</tbody>
-                    </table>`;
-            }
-            document.getElementById('historyModal').classList.add('active');
-        };
-
-        window.toggleUserStatus = (id) => {
-            const users = getData('ango_users', initialUsers);
-            const u = users.find(user => user.id === id);
-            u.status = u.status === 'active' ? 'inactive' : 'active';
-            saveData('ango_users', users);
-            renderUsuarios();
-        };
 
         // --- LÓGICA DE NEGÓCIO ---
 
@@ -602,61 +554,12 @@
             document.getElementById('tripModal').classList.add('active');
         };
 
-        window.togglePauseTrip = (id) => {
-            const viagens = getData('ango_viagens', initialTrips);
-            const v = viagens.find(v => v.id === id);
-            v.status = v.status === 'active' ? 'paused' : 'active';
-            saveData('ango_viagens', viagens);
-            renderViagens();
-        };
-
-        // CRUD Agentes
-        window.openAgentModal = () => {
-            document.getElementById('agentForm').reset();
-            document.getElementById('agentModal').classList.add('active');
-        };
-        window.closeAgentModal = () => document.getElementById('agentModal').classList.remove('active');
-
-        document.getElementById('agentForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const agentes = getData('ango_agentes', initialAgentes);
-            const novo = {
-                id: Date.now(),
-                nome: document.getElementById('agent-name').value,
-                vendas: "0 Kz",
-                comissao: document.getElementById('agent-comm').value,
-                status: "Ativo"
-            };
-            agentes.push(novo);
-            saveData('ango_agentes', agentes);
-            renderAgentes();
-            closeAgentModal();
-        });
-
-        window.deletarAgente = (id) => {
-            if(confirm("Remover este agente do sistema?")) {
-                const agentes = getData('ango_agentes', initialAgentes).filter(a => a.id !== id);
-                saveData('ango_agentes', agentes);
-                renderAgentes();
-            }
-        };
-
-        window.updateAgenteComm = (id, val) => {
-            const agentes = getData('ango_agentes', initialAgentes);
-            const a = agentes.find(a => a.id === id);
-            a.comissao = val;
-            saveData('ango_agentes', agentes);
-        };
-
-        // Agentes
-        window.managePermissions = (id) => {
-            const agentes = getData('ango_agentes', initialAgentes);
-            const a = agentes.find(a => a.id === id);
-            const novoStatus = a.status === 'Ativo' ? 'Suspenso' : 'Ativo';
-            if(confirm(`Deseja alterar o status de ${a.nome} para ${novoStatus}?`)) {
-                a.status = novoStatus;
-                saveData('ango_agentes', agentes);
-                renderAgentes();
+        window.deletarViagem = (id) => {
+            if(confirm("Tem certeza que deseja eliminar esta viagem? Ela desaparecerá do site do cliente.")) {
+                const viagens = getData('ango_viagens', initialTrips).filter(v => v.id !== id);
+                saveData('ango_viagens', viagens);
+                renderViagens();
+                renderReservas(); // Atualiza dashboard
             }
         };
 
@@ -692,28 +595,42 @@
             btn.disabled = false;
         }
 
-        document.getElementById('configForm').addEventListener('submit', function(e) {
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
             e.preventDefault();
             applySpinner(this.querySelector('button'), () => {
-                const config = {
+                const settings = getData('ango_settings', {});
+                settings.profile = {
                     name: document.getElementById('cfg-name').value,
                     email: document.getElementById('cfg-email').value
                 };
-                saveData('ango_config', config);
-                document.querySelector('.user-profile span').innerText = config.name;
+                saveData('ango_settings', settings);
+                document.getElementById('admin-name-display').innerText = settings.profile.name;
                 alert('Perfil atualizado!');
             });
         });
 
-        document.getElementById('feesForm').addEventListener('submit', function(e) {
+        document.getElementById('financialForm').addEventListener('submit', function(e) {
             e.preventDefault();
             applySpinner(this.querySelector('button'), () => {
-                const fees = {
-                    commission: document.getElementById('fee-commission').value,
-                    service: document.getElementById('fee-service').value
+                const settings = getData('ango_settings', {});
+                settings.financial = {
+                    serviceFee: document.getElementById('fee-service').value,
+                    currency: document.getElementById('sys-currency').value
                 };
-                saveData('ango_fees', fees);
-                alert('Taxas de BI guardadas com sucesso!');
+                saveData('ango_settings', settings);
+                alert('Configurações financeiras salvas!');
+            });
+        });
+
+        document.getElementById('notifForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            applySpinner(this.querySelector('button'), () => {
+                const settings = getData('ango_settings', {});
+                settings.notifications = {
+                    booking: document.getElementById('notif-new-booking').checked
+                };
+                saveData('ango_settings', settings);
+                alert('Preferências de notificação salvas!');
             });
         });
 
@@ -724,21 +641,22 @@
             document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
         };
 
+        window.resetSystemData = () => {
+            if(confirm("ATENÇÃO: Isso apagará todos os dados do sistema permanentemente. Continuar?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
         // Event Listeners
         document.getElementById('adminSearch').addEventListener('input', (e) => {
             renderReservas(e.target.value);
-        });
-
-        document.getElementById('userSearchInput').addEventListener('input', (e) => {
-            renderUsuarios(e.target.value);
         });
 
         document.addEventListener('DOMContentLoaded', () => {
             // Inicializar tudo
             renderReservas();
             renderViagens();
-            renderAgentes();
-            renderUsuarios();
 
             // Carregar Configurações Centralizadas
             const settings = getData('ango_settings', {
@@ -750,10 +668,8 @@
             document.getElementById('cfg-name').value = settings.profile.name;
             document.getElementById('cfg-email').value = settings.profile.email;
             document.querySelector('.user-profile span').innerText = settings.profile.name;
-            document.getElementById('fee-commission').value = settings.financial.commission;
             document.getElementById('fee-service').value = settings.financial.serviceFee;
             document.getElementById('notif-new-booking').checked = settings.notifications.booking;
-            document.getElementById('notif-agent-login').checked = settings.notifications.agentLogin;
             
             // Persistência: Recupera a última seção aberta ao recarregar
             const lastSection = sessionStorage.getItem('activeAdminSection') || 'dashboard';

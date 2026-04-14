@@ -21,6 +21,7 @@
             <ul class="nav-links">
                 <li><a href="#">Início</a></li>
                 <li><a href="#sobre-nos">Sobre Nós</a></li>
+                <li><a href="#faq">FAQ</a></li>
             </ul>
         </nav>
         <div class="auth-buttons" id="auth-section">
@@ -71,6 +72,22 @@
         <section id="viagens" class="viagens-grid">
             <!-- Dynamically Rendered -->
         </section>
+
+        <section id="faq" style="margin-top: 4rem; padding: 2rem; background: white; border-radius: 8px;">
+            <h2 style="margin-bottom: 2rem;">Perguntas Frequentes</h2>
+            <details style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+                <summary style="font-weight: 700; color: var(--primary-color);">Como faço uma reserva?</summary>
+                <p style="margin-top: 1rem; color: #64748b;">Basta escolher o seu destino na lista acima, clicar no botão "Reservar" e fazer o login na sua conta.</p>
+            </details>
+            <details style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+                <summary style="font-weight: 700; color: var(--primary-color);">Quais são as formas de pagamento?</summary>
+                <p style="margin-top: 1rem; color: #64748b;">O pagamento é feito via transferência bancária ou no local do embarque, apresentando o comprovativo da reserva.</p>
+            </details>
+            <details style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+                <summary style="font-weight: 700; color: var(--primary-color);">Posso cancelar uma reserva?</summary>
+                <p style="margin-top: 1rem; color: #64748b;">Sim, entrando em contacto com o nosso suporte ou aguardando o cancelamento automático caso não confirme o pagamento.</p>
+            </details>
+        </section>
     </main>
 
     <div class="modal-overlay" id="auth-modal">
@@ -116,14 +133,7 @@
         const state = {
             isLoggedIn: false,
             currentSlide: 0,
-            trips: [
-                { id: 1, type: 'trip', province: 'Benguela', price: 12500, time: '08:30', company: 'Macon' },
-                { id: 2, type: 'ad', title: 'Promoção Benguela', desc: 'Reserve ida e volta e ganhe 15% de desconto na Baía Azul.', image: 'imagens/benguela_promo.png' },
-                { id: 3, type: 'trip', province: 'Malanje', price: 9500, time: '07:00', company: 'AngoReal' },
-                { id: 4, type: 'trip', province: 'Huambo', price: 14000, time: '06:15', company: 'RealExpress' },
-                { id: 5, type: 'ad', title: 'Visite o Huambo', desc: 'Pacotes especiais para grupos no Jardim da Cultura.', image: 'imagens/huambo_promo.png' },
-                { id: 6, type: 'trip', province: 'Lubango', price: 18500, time: '09:45', company: 'Macon' }
-            ]
+            trips: JSON.parse(localStorage.getItem('ango_viagens')) || []
         };
 
         function applyFilters() { renderTrips(); }
@@ -133,10 +143,15 @@
             const dest = document.getElementById('filter-dest').value;
             const price = document.getElementById('filter-price').value;
 
-            const filtered = state.trips.filter(item => {
+            // Filtra viagens ativas vindas do admin
+            const filtered = state.trips.filter(item => (item.status === 'active' || !item.status)).filter(item => {
                 if (item.type === 'ad') return dest === 'todos';
-                const matchDest = dest === 'todos' || item.province === dest;
-                const matchPrice = !price || item.price <= parseInt(price);
+                
+                const itemDest = item.province || item.rota.split(' - ')[1];
+                const itemPrice = typeof item.price === 'number' ? item.price : parseInt(item.preco.replace(/\D/g, ''));
+                
+                const matchDest = dest === 'todos' || itemDest === dest;
+                const matchPrice = !price || itemPrice <= parseInt(price);
                 return matchDest && matchPrice;
             });
 
@@ -147,14 +162,18 @@
                         <h3>${item.title}</h3>
                         <p>${item.desc}</p>
                     </div>`;
+                
+                const province = item.province || item.rota.split(' - ')[1];
+                const displayPrice = item.preco || item.price.toLocaleString('pt-AO') + " Kz";
+                
                 return `
                     <div class="card">
-                        <h3>${item.province}</h3>
+                        <h3>${province}</h3>
                         <div class="card-details">
-                            <div class="card-info"><i data-lucide="bus" size="14"></i> ${item.company}</div>
-                            <div class="card-info"><i data-lucide="clock" size="14"></i> ${item.time}</div>
+                            <div class="card-info"><i data-lucide="bus" size="14"></i> ${item.empresa || item.company}</div>
+                            <div class="card-info"><i data-lucide="clock" size="14"></i> ${item.horario || item.time}</div>
                         </div>
-                        <div class="card-price">${item.price.toLocaleString('pt-AO')} Kz</div>
+                        <div class="card-price">${displayPrice}</div>
                         <button class="btn-reserve" onclick="reservar(${item.id})">Reservar</button>
                     </div>`;
             }).join('');
@@ -202,14 +221,16 @@
             
             if (!viagemSelecionada) return;
 
+            const destino = viagemSelecionada.province || viagemSelecionada.rota.split(' - ')[1];
+            const preco = viagemSelecionada.preco || viagemSelecionada.price.toLocaleString('pt-AO') + " Kz";
+
             // 3. Criação do Objeto de Reserva: Estrutura compatível com admin.html
             const novaReserva = {
                 id: "#" + Math.floor(100 + Math.random() * 900), // Ex: #432
                 cliente: "Usuário Logado", 
-                destino: viagemSelecionada.province,
-                preco: viagemSelecionada.price.toLocaleString('pt-AO') + " Kz",
+                destino: destino,
+                preco: preco,
                 status: 'pending', 
-                agente: viagemSelecionada.company,
                 data: new Date().toLocaleDateString('pt-AO')
             };
 
