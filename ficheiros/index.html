@@ -5,10 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <title>Ango Reserva | Sistema de Reservas Inter-provinciais</title>
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Efeito de transição suave para as imagens do slider */
+        .fade-in {
+            animation: fadeInEffect 1.2s ease-in-out;
+        }
 
+        @keyframes fadeInEffect {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+    </style>
 </head>
 
 <body>
@@ -21,7 +32,6 @@
             <ul class="nav-links">
                 <li><a href="index.html">Início</a></li>
                 <li><a href="sobre.html">Sobre Nós</a></li>
-                <li><a href="#usuarios-list">Usuários</a></li>
                 <li><a href="#faq">FAQ</a></li>
             </ul>
         </nav>
@@ -119,31 +129,50 @@
 
     <script>
         const state = {
-            isLoggedIn: false,
-            currentSlide: 0,
-            trips: JSON.parse(localStorage.getItem('ango_viagens')) || [],
-            slides: JSON.parse(localStorage.getItem('ango_slides')) || [
-                { id: 1, title: 'Descubra as Quedas de Kalandula', text: 'Uma das maravilhas naturais de Malanje espera por si.', img: 'imagens/quedadecalandula.png' },
-                { id: 2, title: 'Sol e Mar na Baía Azul', text: 'O paraíso em Benguela a um clique de distância.', img: 'imagens/baiaazula.png' }
-            ]
-        };
-
-        function renderHero() {
-            const container = document.querySelector('.slider-container');
-            if (state.slides.length === 0) {
-                container.innerHTML = '<div class="slide active"><div class="slide-content"><h1>Bem-vindo à Ango Reserva</h1></div></div>';
-                return;
-            }
-            container.innerHTML = state.slides.map((s, index) => `
-                <div class="slide ${index === 0 ? 'active' : ''}" style="background-image: url('${s.img}')">
-                    <div class="slide-overlay"></div>
-                    <div class="slide-content">
-                        <h1>${s.title}</h1>
-                        <p>${s.text}</p>
-                    </div>
-                </div>
-            `).join('');
+    isLoggedIn: false,
+    currentSlide: 0,
+    trips: JSON.parse(localStorage.getItem('ango_viagens')) || [],
+    slides: JSON.parse(localStorage.getItem('ango_slides')) || [
+        { 
+            id: 1, 
+            title: 'Sol e Mar na Baía Azul', 
+            text: 'O paraíso em Benguela a um clique de distância.', 
+            img: 'imagens/imagem.png' 
+        },
+        { 
+            id: 2, 
+            title: 'Descubra as Quedas de Kalandula', 
+            text: 'Uma das maravilhas naturais de Malanje espera por si.', 
+            img: 'imagens/quedadecalandula.png' 
         }
+    ]
+};
+        function renderHero() {
+    const container = document.querySelector('.slider-container');
+    if (!container) return;
+
+    const slide = state.slides[state.currentSlide];
+
+    container.innerHTML = `
+        <div class="slide fade-in" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${slide.img}')">
+            <div class="slide-content">
+                <h1>${slide.title}</h1>
+                <p>${slide.text}</p>
+                
+            </div>
+        </div>
+    `;
+}
+
+// Iniciar o Slider e o Temporizador
+document.addEventListener('DOMContentLoaded', () => {
+    renderHero();
+    
+    setInterval(() => {
+        state.currentSlide = (state.currentSlide + 1) % state.slides.length;
+        renderHero();
+    }, 5000); // Troca a cada 5 segundos
+});
 
         function applyFilters() { renderTrips(); }
 
@@ -306,15 +335,18 @@
         }
 
         function startSlider() {
-            const slides = document.querySelectorAll('.slide');
+            if (state.slides.length <= 1) return;
+
             setInterval(() => {
-                slides[state.currentSlide].classList.remove('active');
-                state.currentSlide = (state.currentSlide + 1) % slides.length;
-                slides[state.currentSlide].classList.add('active');
-            }, 5000);
+                // Cálculo do Próximo Slide: O operador % (módulo) garante que se o índice
+                // chegar ao fim da lista, ele retorne para 0 automaticamente, criando um loop.
+                state.currentSlide = (state.currentSlide + 1) % state.slides.length;
+                renderHero(); // Re-renderiza a interface para mostrar a nova imagem
+            }, 5000); // Troca de imagem a cada 5 segundos
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            renderHero();
             renderTrips();
             renderUsers();
             startSlider();
