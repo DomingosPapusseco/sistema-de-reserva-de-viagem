@@ -464,12 +464,7 @@
         const initialReservas = [];
         const initialTrips = [];
         const initialUsers = [];
-        const initialSlides = [
-            { id: 1, title: 'Descubra as Quedas de Kalandula', text: 'Uma das maravilhas naturais de Malanje espera por si.', img: 'imagens/quedadecalandula.png' },
-            { id: 2, title: 'Sol e Mar na Baía Azul', text: 'O paraíso em Benguela a um clique de distância.', img: 'imagens/baiaazula.png' }
-            // Exemplo de como adicionar mais slides da pasta 'imagens'
-            // { id: 3, title: 'Explore o Parque Nacional da Kissama', text: 'Aventura selvagem à sua espera em Luanda.', img: 'imagens/kissama.png' }
-        ];
+        const initialSlides = [];
 
         window.logoutAdmin = () => {
             sessionStorage.removeItem('adminSession');
@@ -477,8 +472,17 @@
         };
 
         // --- UTILITÁRIOS ---
-        const getData = (key, fallback) => JSON.parse(localStorage.getItem(key)) || fallback;
-        const saveData = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+        
+        const memoryStore = {
+            ango_viagens: [],
+            ango_reservas: [],
+            ango_users: [],
+            ango_slides: [],
+            ango_settings: {}
+        };
+
+        const getData = (key, fallback) => memoryStore[key] || fallback;
+        const saveData = (key, data) => { memoryStore[key] = data; };
         const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
         // Função para alternar entre seções (Navegação Dinâmica)
@@ -826,8 +830,8 @@
 
         window.resetSystemData = () => {
             if(confirm("ATENÇÃO: Isso apagará todos os dados do sistema permanentemente. Continuar?")) {
-                localStorage.clear();
-                location.reload();
+                alert("Os dados em memória foram resetados.");
+                window.location.reload();
             }
         }
 

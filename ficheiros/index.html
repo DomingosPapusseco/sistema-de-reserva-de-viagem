@@ -19,6 +19,25 @@
             from { opacity: 0.4; }
             to { opacity: 1; }
         }
+
+        .modal-actions-auth {
+            display: flex;
+            gap: 10px;
+            margin-top: 0.5rem;
+        }
+        .btn-cancel {
+            flex: 1;
+            background: #f1f5f9;
+            color: var(--text-main);
+            border: none;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-cancel:hover { background: #e2e8f0; }
+        #modal-submit-btn { flex: 2; }
     </style>
 </head>
 
@@ -97,7 +116,10 @@
                     <input type="email" placeholder="E-mail" required>
                     <input type="password" placeholder="Palavra-passe" required>
                     <div id="signup-extra-fields"></div>
-                    <button type="submit" class="btn-reserve" id="modal-submit-btn">Aceder</button>
+                    <div class="modal-actions-auth">
+                        <button type="button" class="btn-cancel" id="modal-cancel-btn" onclick="toggleModal(false)">Fechar</button>
+                        <button type="submit" class="btn-reserve" id="modal-submit-btn">Aceder</button>
+                    </div>
                 </form>
                 <div class="modal-footer" id="modal-toggle-footer">
                     Ainda não tem conta? <a href="javascript:void(0)"
@@ -131,25 +153,17 @@
         const state = {
     isLoggedIn: false,
     currentSlide: 0,
-    trips: JSON.parse(localStorage.getItem('ango_viagens')) || [],
-    slides: JSON.parse(localStorage.getItem('ango_slides')) || [
-        { 
-            id: 1, 
-            title: 'Sol e Mar na Baía Azul', 
-            text: 'O paraíso em Benguela a um clique de distância.', 
-            img: 'imagens/imagem.png' 
-        },
-        { 
-            id: 2, 
-            title: 'Descubra as Quedas de Kalandula', 
-            text: 'Uma das maravilhas naturais de Malanje espera por si.', 
-            img: 'imagens/quedadecalandula.png' 
-        }
-    ]
+    trips: [], // Iniciando sem rotas
+    slides: []  // Iniciando sem slides
 };
         function renderHero() {
     const container = document.querySelector('.slider-container');
     if (!container) return;
+
+    if (state.slides.length === 0) {
+        container.innerHTML = '<div class="slide" style="background: var(--navy);"><div class="slide-content"><h1>Bem-vindo à Ango Reserva</h1><p>Nenhum destaque disponível no momento.</p></div></div>';
+        return;
+    }
 
     const slide = state.slides[state.currentSlide];
 
@@ -180,6 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const grid = document.getElementById('viagens');
             const dest = document.getElementById('filter-dest').value;
             const price = document.getElementById('filter-price').value;
+
+            if (state.trips.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);"><h3>Nenhuma rota disponível no momento.</h3><p>Por favor, volte mais tarde ou contacte o administrador.</p></div>';
+                return;
+            }
 
             // Filtra viagens ativas vindas do admin
             const filtered = state.trips.filter(item => (item.status === 'active' || !item.status)).filter(item => {
@@ -220,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function renderUsers() {
             const grid = document.getElementById('users-grid');
-            const users = JSON.parse(localStorage.getItem('ango_users')) || [];
+            const users = []; // Sem persistência NoSQL
             grid.innerHTML = users.map(u => `
                 <div class="card" style="text-align: center; padding: 1.5rem;">
                     <i data-lucide="user" size="32" style="margin: 0 auto 1rem;"></i>
@@ -236,17 +255,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const modal = document.getElementById('auth-modal');
             const title = document.getElementById('modal-title');
             const submitBtn = document.getElementById('modal-submit-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
             const footer = document.getElementById('modal-toggle-footer');
             const extraFields = document.getElementById('signup-extra-fields');
 
             if (mode === 'signup') {
                 title.innerText = "Criar Conta na Ango Reserva";
                 submitBtn.innerText = "Cadastrar";
+                cancelBtn.innerText = "Voltar";
+                cancelBtn.onclick = () => toggleModal(true, 'login');
                 extraFields.innerHTML = `<input type="password" placeholder="Confirmar Palavra-passe" required>`;
                 footer.innerHTML = `Já tem conta? <a href="javascript:void(0)" onclick="toggleModal(true, 'login')">Entre aqui</a>`;
             } else {
                 title.innerText = "Entrar na Ango Reserva";
                 submitBtn.innerText = "Aceder";
+                cancelBtn.innerText = "Fechar";
+                cancelBtn.onclick = () => toggleModal(false);
                 extraFields.innerHTML = '';
                 footer.innerHTML = `Não tem conta? <a href="javascript:void(0)" onclick="toggleModal(true, 'signup')">Cadastre-se</a>`;
             }
@@ -266,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const users = JSON.parse(localStorage.getItem('ango_users')) || [];
+            const users = []; // Lista local temporária
             let loggedUser;
 
             // Se for Cadastro, salva o usuário no sistema para o Admin gerir
@@ -279,8 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     data: new Date().toLocaleDateString('pt-AO'),
                     status: 'ativo'
                 };
-                users.push(loggedUser);
-                localStorage.setItem('ango_users', JSON.stringify(users));
             } else {
                 // Login Simples: Procura o usuário pelo email
                 loggedUser = users.find(u => u.email === email);
@@ -324,9 +346,8 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // 4. Persistência de Dados: Sincronização via localStorage
-            const reservasAtuais = JSON.parse(localStorage.getItem('ango_reservas')) || [];
-            reservasAtuais.push(novaReserva);
-            localStorage.setItem('ango_reservas', JSON.stringify(reservasAtuais));
+            // NoSQL removido: A reserva agora existe apenas nesta sessão de memória
+            console.log("Reserva criada em memória:", novaReserva);
 
             // 5. Feedback e Fechamento
             alert(`Reserva para ${viagemSelecionada.province} solicitada com sucesso!\nVocê pode acompanhar o status no Painel Admin.`);
