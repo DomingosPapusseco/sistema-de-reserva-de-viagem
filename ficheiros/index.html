@@ -164,31 +164,109 @@
         </div>
         <div class="footer-bottom">© 2026 Ango Reserva. Todos os direitos reservados.</div>
     </footer>
-    
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC0Z...",
-  authDomain: "alras-d2251.firebaseapp.com",
-  projectId: "alras-d2251",
-  storageBucket: "alras-d2251.firebasestorage.app",
-  messagingSenderId: "419855488052",
-  appId: "1:419855488052:web:5b5f8239bbcea87e5c2661"
-};
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0Z...", // Mantendo sua chave existente
+            authDomain: "sistema-de-reserva-de-viagem.firebaseapp.com",
+            projectId: "sistema-de-reserva-de-viagem",
+            storageBucket: "sistema-de-reserva-de-viagem.firebasestorage.app",
+            messagingSenderId: "419855488052",
+            appId: "1:419855488052:web:5b5f8239bbcea87e5c2661"
+        };
 
-// tornar global
-window.db = db;
-window.ref = ref;
-window.set = set;
-window.get = get;
-window.child = child;
-</script>
-    
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 🔄 Sincronização em tempo real
+        onSnapshot(collection(db, "viagens"), (snapshot) => {
+            state.trips = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            renderTrips();
+        });
+
+        onSnapshot(collection(db, "slides"), (snapshot) => {
+            state.slides = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            renderHero();
+            if (state.slides.length > 0) startSlider();
+        });
+
+        // 🌍 Escopo Global: Função Reservar (necessária para onclick no HTML)
+        window.reservar = async (id) => {
+            if (!state.isLoggedIn) {
+                toggleModal(true, 'login');
+                return;
+            }
+
+            const viagemSelecionada = state.trips.find(t => t.id === id);
+            if (!viagemSelecionada) return;
+
+            const user = JSON.parse(sessionStorage.getItem('loggedUser'));
+
+            try {
+                // 📝 Salvar reserva no Firestore (addDoc)
+                await addDoc(collection(db, "reservas"), {
+                    userId: user.id,
+                    cliente: user.nome,
+                    destino: viagemSelecionada.province || (viagemSelecionada.rota ? viagemSelecionada.rota.split(' - ')[1] : "Destino Desconhecido"),
+                    preco: viagemSelecionada.preco || viagemSelecionada.price,
+                    status: 'pending',
+                    data: new Date().toLocaleString('pt-AO'),
+                    tripId: id
+                });
+                alert(`Reserva para ${viagemSelecionada.province || "o destino"} solicitada com sucesso!`);
+            } catch (e) {
+                console.error("Erro ao salvar reserva:", e);
+                alert("Erro ao realizar reserva no servidor.");
+            }
+        };
+
+        // 🌍 Escopo Global: Função handleAuth (necessária para onsubmit no formulário)
+        window.handleAuth = async (e) => {
+            e.preventDefault();
+            const email = e.target.querySelector('input[type="email"]').value;
+            const password = e.target.querySelector('input[type="password"]').value;
+            const isSignup = document.getElementById('modal-title').innerText.includes("Criar");
+
+            if (isSignup) {
+                const nomeInput = e.target.querySelector('input[placeholder="Nome Completo"]');
+                const nome = nomeInput ? nomeInput.value : email.split('@')[0];
+                const newUser = { nome, email, password, status: 'ativo', data: new Date().toLocaleString('pt-AO') };
+                const docRef = await addDoc(collection(db, "usuarios"), newUser);
+                const loggedUser = { id: docRef.id, ...newUser };
+                sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+                state.isLoggedIn = true;
+                document.getElementById('auth-section').innerHTML = `<span style="color: white; font-weight: 700;">Olá, ${nome}</span>`;
+            } else {
+                const q = query(collection(db, "usuarios"), where("email", "==", email), where("password", "==", password));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    const userData = querySnapshot.docs[0].data();
+                    const loggedUser = { id: querySnapshot.docs[0].id, ...userData };
+                    sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
+                    state.isLoggedIn = true;
+                    document.getElementById('auth-section').innerHTML = `<span style="color: white; font-weight: 700;">Olá, ${userData.nome}</span>`;
+                } else {
+                    alert("E-mail ou palavra-passe incorretos!");
+                    return;
+                }
+            }
+            toggleModal(false);
+        };
+
+        // Inicialização do estado de login se existir no session
+        const savedUser = sessionStorage.getItem('loggedUser');
+        if (savedUser) { state.isLoggedIn = true; }
+    </script>
+
     <script>
         const state = {
             isLoggedIn: false,
@@ -217,17 +295,6 @@ window.child = child;
         </div>
     `;
         }
-
-        // Iniciar o Slider e o Temporizador
-        document.addEventListener('DOMContentLoaded', () => {
-            renderHero();
-
-            setInterval(() => {
-                state.currentSlide = (state.currentSlide + 1) % state.slides.length;
-                renderHero();
-            }, 5000); // Troca a cada 5 segundos
-        });
-
         function applyFilters() { renderTrips(); }
 
         function renderTrips() {
@@ -271,7 +338,7 @@ window.child = child;
                             <div class="card-info"><i data-lucide="clock" size="14"></i> ${item.horario || item.time}</div>
                         </div>
                         <div class="card-price">${displayPrice}</div>
-                        <button class="btn-reserve" onclick="reservar(${item.id})">Reservar</button>
+                        <button class="btn-reserve" onclick="reservar('${item.id}')">Reservar</button>
                     </div>`;
             }).join('');
             lucide.createIcons();
@@ -327,86 +394,20 @@ window.child = child;
             lucide.createIcons();
         }
 
-        function handleAuth(e) {
-            e.preventDefault();
-            const email = e.target.querySelector('input[type="email"]').value;
-            const password = e.target.querySelector('input[type="password"]').value;
-
-            const users = []; // Lista local temporária
-            let loggedUser;
-
-            // Se for Cadastro, salva o usuário no sistema para o Admin gerir
-            const isSignup = document.getElementById('modal-title').innerText.includes("Criar");
-            if (isSignup) {
-                loggedUser = {
-                    id: Date.now(),
-                    nome: email.split('@')[0], // Nome simplificado baseado no email
-                    email: email,
-                    data: new Date().toLocaleDateString('pt-AO'),
-                    status: 'ativo'
-                };
-            } else {
-                // Login Simples: Procura o usuário pelo email
-                loggedUser = users.find(u => u.email === email);
-                if (!loggedUser) {
-                    alert("Usuário não encontrado. Por favor, cadastre-se.");
-                    return;
-                }
-            }
-
-            sessionStorage.setItem('loggedUser', JSON.stringify(loggedUser));
-            state.isLoggedIn = true;
-            document.getElementById('auth-section').innerHTML = `<span style="color: white; font-weight: 700;">Olá, ${loggedUser.nome}</span>`;
-            toggleModal(false);
-        }
-
-        function reservar(id) {
-            // 1. Validação de Login: Se não estiver logado, abre o modal em modo 'login'
-            if (!state.isLoggedIn) {
-                toggleModal(true, 'login');
-                return;
-            }
-
-            // 2. Identificação da Viagem: Localiza os dados no state.trips
-            const viagemSelecionada = state.trips.find(t => t.id === id);
-
-            if (!viagemSelecionada) return;
-
-            const destino = viagemSelecionada.province || viagemSelecionada.rota.split(' - ')[1];
-            const preco = viagemSelecionada.preco || viagemSelecionada.price.toLocaleString('pt-AO') + " Kz";
-            const user = JSON.parse(sessionStorage.getItem('loggedUser'));
-
-            // 3. Criação do Objeto de Reserva: Estrutura compatível com admin.html
-            const novaReserva = {
-                id: "#" + Math.floor(100 + Math.random() * 900), // Ex: #432
-                userId: user.id,
-                cliente: user.nome,
-                destino: destino,
-                preco: preco,
-                status: 'pending',
-                data: new Date().toLocaleDateString('pt-AO')
-            };
-
-            // 4. Persistência de Dados: Sincronização via localStorage
-            // NoSQL removido: A reserva agora existe apenas nesta sessão de memória
-            console.log("Reserva criada em memória:", novaReserva);
-
-            // 5. Feedback e Fechamento
-            alert(`Reserva para ${viagemSelecionada.province} solicitada com sucesso!\nVocê pode acompanhar o status no Painel Admin.`);
-
-            // Opcional: Se houvesse um modal de confirmação de reserva, fecharíamos aqui
-        }
-
+        let sliderInterval;
         function startSlider() {
             if (state.slides.length <= 1) return;
+            if (sliderInterval) clearInterval(sliderInterval);
 
-            setInterval(() => {
-                // Cálculo do Próximo Slide: O operador % (módulo) garante que se o índice
-                // chegar ao fim da lista, ele retorne para 0 automaticamente, criando um loop.
+            sliderInterval = setInterval(() => {
                 state.currentSlide = (state.currentSlide + 1) % state.slides.length;
-                renderHero(); // Re-renderiza a interface para mostrar a nova imagem
-            }, 5000); // Troca de imagem a cada 5 segundos
+                renderHero();
+            }, 5000);
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             renderHero();

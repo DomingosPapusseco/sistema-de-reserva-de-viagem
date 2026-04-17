@@ -525,31 +525,106 @@
         </div>
     </div>
 
-    <script>
-        // --- DADOS INICIAIS ---
-        const initialReservas = [];
-        const initialTrips = [];
-        const initialUsers = [];
-        const initialSlides = [];
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-        window.logoutAdmin = () => {
-            sessionStorage.removeItem('adminSession');
-            window.location.href = 'index.html';
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0Z...",
+            authDomain: "sistema-de-reserva-de-viagem.firebaseapp.com",
+            projectId: "sistema-de-reserva-de-viagem",
+            storageBucket: "sistema-de-reserva-de-viagem.firebasestorage.app",
+            messagingSenderId: "419855488052",
+            appId: "1:419855488052:web:5b5f8239bbcea87e5c2661"
         };
 
-        // --- UTILITÁRIOS ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- GLOBAL ACTIONS ---
+        window.logoutAdmin = () => {
+            sessionStorage.removeItem('adminLoggedIn');
+            window.location.href = 'index.html';
+        };
 
         const memoryStore = {
             ango_viagens: [],
             ango_reservas: [],
             ango_users: [],
-            ango_slides: [],
-            ango_settings: {}
+            ango_slides: []
         };
 
+        // --- REAL-TIME SYNC ---
+        onSnapshot(collection(db, "viagens"), (snap) => {
+            memoryStore.ango_viagens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderViagens();
+            updateDashboard();
+        });
+
+        onSnapshot(query(collection(db, "reservas"), orderBy("data", "desc")), (snap) => {
+            memoryStore.ango_reservas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderReservas();
+            updateDashboard();
+        });
+
+        onSnapshot(collection(db, "usuarios"), (snap) => {
+            memoryStore.ango_users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderUsuarios();
+        });
+
+        onSnapshot(collection(db, "slides"), (snap) => {
+            memoryStore.ango_slides = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderSlides();
+        });
+
+        function updateDashboard() {
+            document.getElementById('dash-total-reservas').innerText = memoryStore.ango_reservas.length;
+            document.getElementById('dash-total-viagens').innerText = memoryStore.ango_viagens.length;
+            const receita = memoryStore.ango_reservas
+                .filter(r => r.status === 'confirmado')
+                .reduce((acc, r) => acc + (parseInt(r.preco?.toString().replace(/\D/g, '')) || 0), 0);
+            document.getElementById('dash-total-receita').innerText = receita.toLocaleString('pt-AO') + " Kz";
+        }
+
+        // --- CRUD OPERATIONS ---
+        window.proximoStatus = async (id) => {
+            const estados = ['pending', 'confirmado', 'cancelado'];
+            const res = memoryStore.ango_reservas.find(r => r.id === id);
+            if (!res) return;
+            const next = estados[(estados.indexOf(res.status) + 1) % estados.length];
+            await updateDoc(doc(db, "reservas", id), { status: next });
+        };
+
+        window.deletarReserva = async (id) => {
+            if (confirm("Excluir esta reserva?")) await deleteDoc(doc(db, "reservas", id));
+        };
+
+        window.deletarViagem = async (id) => {
+            if (confirm("Excluir esta rota?")) await deleteDoc(doc(db, "viagens", id));
+        };
+
+        window.deletarSlide = async (id) => {
+            if (confirm("Remover este slide?")) await deleteDoc(doc(db, "slides", id));
+        };
+
+        window.toggleUserStatus = async (id) => {
+            const user = memoryStore.ango_users.find(u => u.id === id);
+            if (!user) return;
+            const newStatus = user.status === 'suspenso' ? 'ativo' : 'suspenso';
+            await updateDoc(doc(db, "usuarios", id), { status: newStatus });
+        };
+
+        window.deletarUsuario = async (id) => {
+            if (confirm("Excluir este usuário permanentemente?")) {
+                await deleteDoc(doc(db, "usuarios", id));
+            }
+        };
+
+        // --- RENDERERS ---
+        const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+
+        // eslint-disable-next-line no-unused-vars
         const getData = (key, fallback) => memoryStore[key] || fallback;
-        const saveData = (key, data) => { memoryStore[key] = data; };
-        const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
         // Função para alternar entre seções (Navegação Dinâmica)
         function showSection(sectionId) {
@@ -589,23 +664,11 @@
 
         function renderReservas(filter = "") {
             const tableBody = document.getElementById('tableBody');
-            const reservas = getData('ango_reservas', initialReservas);
-            const viagens = getData('ango_viagens', initialTrips);
-
-            // Atualizar Estatísticas do Dashboard
-            document.getElementById('dash-total-reservas').innerText = reservas.length;
-            document.getElementById('dash-total-viagens').innerText = viagens.length;
-            const receitaTotal = reservas.reduce((acc, r) => acc + (parseInt(r.preco.replace(/\D/g, '')) || 0), 0);
-            document.getElementById('dash-total-receita').innerText = receitaTotal.toLocaleString('pt-AO') + " Kz";
-
+            const reservas = memoryStore.ango_reservas;
             if (reservas.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: var(--secondary-color);">Nenhum dado registado</td></tr>';
                 return;
             }
-
-            // Atualizar Relatórios
-            if (document.getElementById('report-total-receita'))
-                document.getElementById('report-total-receita').innerText = receitaTotal.toLocaleString('pt-AO') + " Kz";
 
             tableBody.innerHTML = reservas
                 .filter(r => r.cliente.toLowerCase().includes(filter.toLowerCase()) ||
@@ -615,17 +678,17 @@
                         <td>${r.id}</td>
                         <td>
                             <strong>${r.cliente}</strong><br>
-                            <small style="color: var(--secondary-color)">User ID: #${r.userId ? r.userId.toString().slice(-6) : 'N/A'}</small>
+                            <small style="color: var(--secondary-color)">ID: ${r.userId ? r.userId.slice(-5) : '?'}</small>
                         </td>
                         <td>${r.destino}</td>
                         <td>${r.preco}</td>
                         <td><span class="status-${r.status}">${capitalize(r.status)}</span></td>
                         <td>${r.data}</td>
                         <td>
-                            <button class="btn-action btn-edit" onclick="proximoStatus('${r.id}')">
+                            <button class="btn-action btn-edit" onclick="window.proximoStatus('${r.id}')">
                                 <i data-lucide="refresh-cw"></i> Status
                             </button>
-                            <button class="btn-action btn-delete" onclick="deletarReserva('${r.id}')">
+                            <button class="btn-action btn-delete" onclick="window.deletarReserva('${r.id}')">
                                 <i data-lucide="trash-2"></i>
                             </button>
                         </td>
@@ -636,7 +699,7 @@
 
         function renderViagens() {
             const tbody = document.getElementById('viagensTableBody');
-            const viagens = getData('ango_viagens', initialTrips);
+            const viagens = memoryStore.ango_viagens;
 
             if (viagens.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--secondary-color);">Nenhum dado registado</td></tr>';
@@ -651,8 +714,8 @@
                     <td>${v.lugares}</td>
                     <td>${v.preco}</td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="editTrip(${v.id})"><i data-lucide="edit-3"></i></button>
-                        <button class="btn-action btn-delete" onclick="deletarViagem(${v.id})"><i data-lucide="trash-2"></i></button>
+                        <button class="btn-action btn-edit" onclick="window.openTripModal('${v.id}')"><i data-lucide="edit-3"></i></button>
+                        <button class="btn-action btn-delete" onclick="window.deletarViagem('${v.id}')"><i data-lucide="trash-2"></i></button>
                     </td>
                 </tr>
             `).join('');
@@ -661,7 +724,7 @@
 
         function renderUsuarios() {
             const tbody = document.getElementById('usuariosTableBody');
-            const users = getData('ango_users', initialUsers);
+            const users = memoryStore.ango_users;
 
             if (users.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--secondary-color);">Nenhum usuário cadastrado</td></tr>';
@@ -670,16 +733,16 @@
 
             tbody.innerHTML = users.map(u => `
                 <tr class="${u.status === 'suspenso' ? 'row-paused' : ''}">
-                    <td><small class="card-label">#${u.id.toString().slice(-6)}</small></td>
+                    <td><small class="card-label">${u.id.slice(-5)}</small></td>
                     <td><strong>${u.nome}</strong></td>
                     <td>${u.email}</td>
                     <td>${u.data || '---'}</td>
                     <td><span class="badge ${u.status === 'suspenso' ? 'badge-inactive' : 'badge-active'}">${u.status}</span></td>
                     <td>
-                        <button class="btn-action btn-edit" onclick="toggleUserStatus(${u.id})" title="Alterar Status">
+                        <button class="btn-action btn-edit" onclick="window.toggleUserStatus('${u.id}')" title="Alterar Status">
                             <i data-lucide="${u.status === 'suspenso' ? 'user-check' : 'user-minus'}"></i>
                         </button>
-                        <button class="btn-action btn-delete" onclick="deletarUsuario(${u.id})" title="Excluir">
+                        <button class="btn-action btn-delete" onclick="window.deletarUsuario('${u.id}')" title="Excluir">
                             <i data-lucide="trash-2"></i>
                         </button>
                     </td>
@@ -690,7 +753,7 @@
 
         function renderSlides() {
             const tbody = document.getElementById('slidesTableBody');
-            const slides = getData('ango_slides', initialSlides);
+            const slides = memoryStore.ango_slides;
 
             tbody.innerHTML = slides.map(s => `
                 <tr>
@@ -698,37 +761,22 @@
                     <td>${s.text}</td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${s.img}</td>
                     <td>
-                        <button class="btn-action btn-delete" onclick="deletarSlide(${s.id})"><i data-lucide="trash-2"></i></button>
+                        <button class="btn-action btn-delete" onclick="window.deletarSlide('${s.id}')"><i data-lucide="trash-2"></i></button>
                     </td>
                 </tr>
             `).join('');
             lucide.createIcons();
         }
 
-        // ... (as funções de renderização que você já tem: renderReservas, renderViagens, etc.)
-
-        // --- LÓGICA DE NEGÓCIO (COLE O CÓDIGO NOVO AQUI) ---
-
-        const storage = {
-            get: (key, fallback) => JSON.parse(localStorage.getItem(key)) || fallback,
-            set: (key, data) => localStorage.setItem(key, JSON.stringify(data))
-        };
-
-        // Inicialização de dados vinculada ao storage
-        let viagens = storage.get('ango_viagens', []);
-        let reservas = storage.get('ango_reservas', []);
-        let usuarios = storage.get('ango_users', []);
-        let slides = storage.get('ango_slides', []);
-
-        // --- GESTÃO DE VIAGENS (CRUD) ---
+        // --- FORMS & MODALS ---
         window.openTripModal = (id = null) => {
             const modal = document.getElementById('tripModal');
-            const form = document.getElementById('tripForm');
-            form.reset();
+            document.getElementById('tripForm').reset();
+
             document.getElementById('trip-id').value = id || '';
 
             if (id) {
-                const trip = viagens.find(v => v.id == id);
+                const trip = memoryStore.ango_viagens.find(v => v.id == id);
                 if (trip) {
                     document.getElementById('trip-origin').value = trip.rota.split(' - ')[0];
                     document.getElementById('trip-dest').value = trip.rota.split(' - ')[1];
@@ -749,54 +797,40 @@
             document.getElementById('tripModal').classList.remove('active');
         };
 
-        document.getElementById('tripForm').addEventListener('submit', (e) => {
+        document.getElementById('tripForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('trip-id').value;
             const tripData = {
-                id: id ? parseInt(id) : Date.now(),
                 rota: `${document.getElementById('trip-origin').value} - ${document.getElementById('trip-dest').value}`,
                 empresa: document.getElementById('trip-company').value,
                 horario: document.getElementById('trip-time').value,
                 lugares: document.getElementById('trip-seats').value,
                 preco: document.getElementById('trip-price').value + " Kz",
-                status: 'active'
+                status: 'active',
+                province: document.getElementById('trip-dest').value
             };
 
-            if (id) {
-                viagens = viagens.map(v => v.id == id ? tripData : v);
-            } else {
-                viagens.push(tripData);
-            }
+            if (id) await updateDoc(doc(db, "viagens", id), tripData);
+            else await addDoc(collection(db, "viagens"), tripData);
 
-            storage.set('ango_viagens', viagens);
-            renderViagens();
-            renderReservas();
             closeTripModal();
         });
 
-        // --- GESTÃO DE RESERVAS ---
-        window.proximoStatus = (id) => {
-            const estados = ['pendente', 'confirmado', 'cancelado'];
-            reservas = reservas.map(r => {
-                if (r.id == id) {
-                    let idx = estados.indexOf(r.status);
-                    r.status = estados[(idx + 1) % estados.length];
-                }
-                return r;
+        window.openSlideModal = () => {
+            document.getElementById('slideForm').reset();
+            document.getElementById('slideModal').classList.add('active');
+        };
+
+        document.getElementById('slideForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await addDoc(collection(db, "slides"), {
+                title: document.getElementById('slide-title').value,
+                text: document.getElementById('slide-text').value,
+                img: document.getElementById('slide-img').value
             });
-            storage.set('ango_reservas', reservas);
-            renderReservas();
-        };
+            document.getElementById('slideModal').classList.remove('active');
+        });
 
-        window.deletarReserva = (id) => {
-            if (confirm("Excluir esta reserva?")) {
-                reservas = reservas.filter(r => r.id != id);
-                storage.set('ango_reservas', reservas);
-                renderReservas();
-            }
-        };
-
-        // --- CONFIGURAÇÕES (Tabs) ---
         window.switchTab = (tabId) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
@@ -806,24 +840,17 @@
             event.currentTarget.classList.add('active');
         };
 
-        // --- RESET DE SISTEMA ---
         window.resetSystemData = () => {
-            if (confirm("ATENÇÃO: Isso apagará todos os dados de viagens, reservas e usuários permanentemente. Continuar?")) {
+            if (confirm("ATENÇÃO: Isso apagará o cache local. Os dados do Firebase permanecerão seguros no servidor.")) {
                 localStorage.clear();
                 location.reload();
             }
         };
 
-        // --- BUSCA ---
-        document.getElementById('adminSearch').addEventListener('input', (e) => {
-            renderReservas(e.target.value);
-        });
+        document.getElementById('adminSearch').addEventListener('input', (e) => renderReservas(e.target.value));
 
-        // Inicializar a visualização ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
-            renderViagens();
-            renderReservas();
-            renderUsuarios();
+            lucide.createIcons();
             renderSlides();
             lucide.createIcons();
 
