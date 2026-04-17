@@ -2,6 +2,7 @@
 
         :root {
             --navy: #0f172a;
+            --primary-blue: #007bff;
             /* Azul Petróleo */
             --orange: #f97316;
             /* Laranja */
@@ -360,6 +361,12 @@
             font-size: 0.9rem;
         }
 
+        .modal-form input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            outline: none;
+        }
+
         #signup-extra-fields {
             display: contents;
         }
@@ -372,6 +379,17 @@
             color: var(--text-muted);
             border: none;
             background: none;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--primary-blue);
         }
 
         .modal-footer {

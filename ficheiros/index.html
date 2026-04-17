@@ -16,28 +16,40 @@
         }
 
         @keyframes fadeInEffect {
-            from { opacity: 0.4; }
-            to { opacity: 1; }
+            from {
+                opacity: 0.4;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
-        .modal-actions-auth {
-            display: flex;
-            gap: 10px;
-            margin-top: 0.5rem;
+        /* Personalização do Modal de Autenticação */
+        #auth-modal .modal-content {
+            border-top: 5px solid var(--primary-blue);
+            padding: 3rem 2rem;
         }
-        .btn-cancel {
-            flex: 1;
-            background: #f1f5f9;
-            color: var(--text-main);
-            border: none;
-            padding: 0.8rem;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
+
+        #auth-modal h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--navy);
         }
-        .btn-cancel:hover { background: #e2e8f0; }
-        #modal-submit-btn { flex: 2; }
+
+        #auth-modal .btn-reserve {
+            width: 100%;
+            background: var(--primary-blue);
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.1);
+        }
+
+        #auth-modal .btn-reserve:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
+        }
     </style>
 </head>
 
@@ -92,17 +104,24 @@
 
         <section id="faq" style="margin-top: 4rem; padding: 2rem; background: white; border-radius: 8px;">
             <h2 style="margin-bottom: 2rem;">Perguntas Frequentes</h2>
-            <details style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+            <details
+                style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
                 <summary style="font-weight: 700; color: var(--primary-color);">Como faço uma reserva?</summary>
-                <p style="margin-top: 1rem; color: #64748b;">Basta escolher o seu destino na lista acima, clicar no botão "Reservar" e fazer o login na sua conta.</p>
+                <p style="margin-top: 1rem; color: #64748b;">Basta escolher o seu destino na lista acima, clicar no
+                    botão "Reservar" e fazer o login na sua conta.</p>
             </details>
-            <details style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
-                <summary style="font-weight: 700; color: var(--primary-color);">Quais são as formas de pagamento?</summary>
-                <p style="margin-top: 1rem; color: #64748b;">O pagamento é feito via transferência bancária ou no local do embarque, apresentando o comprovativo da reserva.</p>
+            <details
+                style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+                <summary style="font-weight: 700; color: var(--primary-color);">Quais são as formas de pagamento?
+                </summary>
+                <p style="margin-top: 1rem; color: #64748b;">O pagamento é feito via transferência bancária ou no local
+                    do embarque, apresentando o comprovativo da reserva.</p>
             </details>
-            <details style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+            <details
+                style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
                 <summary style="font-weight: 700; color: var(--primary-color);">Posso cancelar uma reserva?</summary>
-                <p style="margin-top: 1rem; color: #64748b;">Sim, entrando em contacto com o nosso suporte ou aguardando o cancelamento automático caso não confirme o pagamento.</p>
+                <p style="margin-top: 1rem; color: #64748b;">Sim, entrando em contacto com o nosso suporte ou aguardando
+                    o cancelamento automático caso não confirme o pagamento.</p>
             </details>
         </section>
     </main>
@@ -112,14 +131,11 @@
             <button class="modal-close" onclick="toggleModal(false)"><i data-lucide="x" size="20"></i></button>
             <h2 id="modal-title">Entrar na Ango Reserva</h2>
             <div id="modal-body">
-                <form class="modal-form" onsubmit="handleAuth(event)">
-                    <input type="email" placeholder="E-mail" required>
-                    <input type="password" placeholder="Palavra-passe" required>
-                    <div id="signup-extra-fields"></div>
-                    <div class="modal-actions-auth">
-                        <button type="button" class="btn-cancel" id="modal-cancel-btn" onclick="toggleModal(false)">Fechar</button>
-                        <button type="submit" class="btn-reserve" id="modal-submit-btn">Aceder</button>
+                <form class="modal-form" onsubmit="handleAuth(event)" id="auth-form">
+                    <div id="form-fields" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Campos injetados dinamicamente -->
                     </div>
+                    <button type="submit" class="btn-reserve" id="modal-submit-btn">Aceder</button>
                 </form>
                 <div class="modal-footer" id="modal-toggle-footer">
                     Ainda não tem conta? <a href="javascript:void(0)"
@@ -151,23 +167,23 @@
 
     <script>
         const state = {
-    isLoggedIn: false,
-    currentSlide: 0,
-    trips: [], // Iniciando sem rotas
-    slides: []  // Iniciando sem slides
-};
+            isLoggedIn: false,
+            currentSlide: 0,
+            trips: [], // Iniciando sem rotas
+            slides: []  // Iniciando sem slides
+        };
         function renderHero() {
-    const container = document.querySelector('.slider-container');
-    if (!container) return;
+            const container = document.querySelector('.slider-container');
+            if (!container) return;
 
-    if (state.slides.length === 0) {
-        container.innerHTML = '<div class="slide" style="background: var(--navy);"><div class="slide-content"><h1>Bem-vindo à Ango Reserva</h1><p>Nenhum destaque disponível no momento.</p></div></div>';
-        return;
-    }
+            if (state.slides.length === 0) {
+                container.innerHTML = '<div class="slide" style="background: var(--navy);"><div class="slide-content"><h1>Bem-vindo à Ango Reserva</h1><p>Nenhum destaque disponível no momento.</p></div></div>';
+                return;
+            }
 
-    const slide = state.slides[state.currentSlide];
+            const slide = state.slides[state.currentSlide];
 
-    container.innerHTML = `
+            container.innerHTML = `
         <div class="slide fade-in" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${slide.img}')">
             <div class="slide-content">
                 <h1>${slide.title}</h1>
@@ -176,17 +192,17 @@
             </div>
         </div>
     `;
-}
+        }
 
-// Iniciar o Slider e o Temporizador
-document.addEventListener('DOMContentLoaded', () => {
-    renderHero();
-    
-    setInterval(() => {
-        state.currentSlide = (state.currentSlide + 1) % state.slides.length;
-        renderHero();
-    }, 5000); // Troca a cada 5 segundos
-});
+        // Iniciar o Slider e o Temporizador
+        document.addEventListener('DOMContentLoaded', () => {
+            renderHero();
+
+            setInterval(() => {
+                state.currentSlide = (state.currentSlide + 1) % state.slides.length;
+                renderHero();
+            }, 5000); // Troca a cada 5 segundos
+        });
 
         function applyFilters() { renderTrips(); }
 
@@ -203,10 +219,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Filtra viagens ativas vindas do admin
             const filtered = state.trips.filter(item => (item.status === 'active' || !item.status)).filter(item => {
                 if (item.type === 'ad') return dest === 'todos';
-                
+
                 const itemDest = item.province || item.rota.split(' - ')[1];
                 const itemPrice = typeof item.price === 'number' ? item.price : parseInt(item.preco.replace(/\D/g, ''));
-                
+
                 const matchDest = dest === 'todos' || itemDest === dest;
                 const matchPrice = !price || itemPrice <= parseInt(price);
                 return matchDest && matchPrice;
@@ -219,10 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h3>${item.title}</h3>
                         <p>${item.desc}</p>
                     </div>`;
-                
+
                 const province = item.province || item.rota.split(' - ')[1];
                 const displayPrice = item.preco || item.price.toLocaleString('pt-AO') + " Kz";
-                
+
                 return `
                     <div class="card">
                         <h3>${province}</h3>
@@ -255,40 +271,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const modal = document.getElementById('auth-modal');
             const title = document.getElementById('modal-title');
             const submitBtn = document.getElementById('modal-submit-btn');
-            const cancelBtn = document.getElementById('modal-cancel-btn');
             const footer = document.getElementById('modal-toggle-footer');
-            const extraFields = document.getElementById('signup-extra-fields');
+            const formFields = document.getElementById('form-fields');
 
-            if (mode === 'signup') {
-                title.innerText = "Criar Conta na Ango Reserva";
-                submitBtn.innerText = "Cadastrar";
-                cancelBtn.innerText = "Voltar";
-                cancelBtn.onclick = () => toggleModal(true, 'login');
-                extraFields.innerHTML = `<input type="password" placeholder="Confirmar Palavra-passe" required>`;
-                footer.innerHTML = `Já tem conta? <a href="javascript:void(0)" onclick="toggleModal(true, 'login')">Entre aqui</a>`;
+            if (!modal) return;
+
+            if (show) {
+                if (mode === 'signup') {
+                    title.innerText = "Criar Conta na Ango Reserva";
+                    submitBtn.innerText = "Cadastrar";
+                    formFields.innerHTML = `
+                        <input type="text" placeholder="Nome Completo" required>
+                        <input type="email" placeholder="E-mail" required>
+                        <input type="password" placeholder="Palavra-passe" required>
+                        <input type="password" placeholder="Confirmar Palavra-passe" required>
+                    `;
+                    footer.innerHTML = `Já tem conta? <a href="javascript:void(0)" onclick="toggleModal(true, 'login')">Entre aqui</a>`;
+                } else {
+                    title.innerText = "Entrar na Ango Reserva";
+                    submitBtn.innerText = "Aceder";
+                    formFields.innerHTML = `
+                        <input type="email" placeholder="E-mail" required>
+                        <input type="password" placeholder="Palavra-passe" required>
+                    `;
+                    footer.innerHTML = `Não tem conta? <a href="javascript:void(0)" onclick="toggleModal(true, 'signup')">Cadastre-se</a>`;
+                }
+                modal.style.display = 'flex';
             } else {
-                title.innerText = "Entrar na Ango Reserva";
-                submitBtn.innerText = "Aceder";
-                cancelBtn.innerText = "Fechar";
-                cancelBtn.onclick = () => toggleModal(false);
-                extraFields.innerHTML = '';
-                footer.innerHTML = `Não tem conta? <a href="javascript:void(0)" onclick="toggleModal(true, 'signup')">Cadastre-se</a>`;
+                modal.style.display = 'none';
             }
-
-            modal.style.display = show ? 'flex' : 'none';
+            lucide.createIcons();
         }
 
         function handleAuth(e) {
             e.preventDefault();
             const email = e.target.querySelector('input[type="email"]').value;
             const password = e.target.querySelector('input[type="password"]').value;
-
-            // Validação de Administrador
-            if (email === 'admin@angoreserva.com' && password === 'admin123') {
-                sessionStorage.setItem('adminSession', Date.now());
-                window.location.href = 'admin.html';
-                return;
-            }
 
             const users = []; // Lista local temporária
             let loggedUser;
@@ -324,10 +342,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleModal(true, 'login');
                 return;
             }
-            
+
             // 2. Identificação da Viagem: Localiza os dados no state.trips
             const viagemSelecionada = state.trips.find(t => t.id === id);
-            
+
             if (!viagemSelecionada) return;
 
             const destino = viagemSelecionada.province || viagemSelecionada.rota.split(' - ')[1];
@@ -338,10 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const novaReserva = {
                 id: "#" + Math.floor(100 + Math.random() * 900), // Ex: #432
                 userId: user.id,
-                cliente: user.nome, 
+                cliente: user.nome,
                 destino: destino,
                 preco: preco,
-                status: 'pending', 
+                status: 'pending',
                 data: new Date().toLocaleDateString('pt-AO')
             };
 
@@ -351,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 5. Feedback e Fechamento
             alert(`Reserva para ${viagemSelecionada.province} solicitada com sucesso!\nVocê pode acompanhar o status no Painel Admin.`);
-            
+
             // Opcional: Se houvesse um modal de confirmação de reserva, fecharíamos aqui
         }
 

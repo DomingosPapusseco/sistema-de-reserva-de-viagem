@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ango Reserva | Login Admin</title>
+    <link rel="stylesheet" href="admin.css"> <!-- Reutiliza estilos base do admin.css -->
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            background-color: var(--bg-dark);
+            /* Fundo navy (azul escuro) */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-card .icon-container {
+            background-color: var(--primary-color);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+        }
+
+        .login-card .icon-container svg {
+            color: var(--text-light);
+            width: 32px;
+            height: 32px;
+        }
+
+        .login-card h2 {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .login-form label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .login-form input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .login-form button {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .login-form button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: none;
+            /* Escondido por padrão */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="icon-container">
+            <i data-lucide="shield-check"></i>
+        </div>
+        <h2>Login do Administrador</h2>
+        <form id="adminLoginForm" class="login-form">
+            <div class="form-group">
+                <label for="adminEmail">E-mail</label>
+                <input type="email" id="adminEmail" placeholder="digita seu email" required>
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">Palavra-passe</label>
+                <input type="password" id="adminPassword" placeholder="digita sua senha" required>
+            </div>
+            <p id="errorMessage" class="error-message">Credenciais inválidas. Tente novamente.</p>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+
+    <script>
+        lucide.createIcons(); // Inicializa os ícones Lucide
+
+        document.getElementById('adminLoginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Credenciais hardcoded para demonstração
+            if (email === 'domingospapusseco8@gmail.com' && password === '12345') {
+                sessionStorage.setItem('adminLoggedIn', 'true'); // Salva o estado de login
+                window.location.href = 'admin.html'; // Redireciona para o dashboard
+            } else {
+                errorMessage.style.display = 'block'; // Mostra mensagem de erro
+            }
+        });
+    </script>
+</body>
+
+</html>

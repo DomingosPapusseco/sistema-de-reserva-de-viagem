@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
+
 <head>
+    <script>
+        // Bloqueio de Acesso Direto (Security Guard)
+        // Verifica se o administrador está logado. Se não, redireciona para a tela de login.
+        if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ango Reserva | Painel do Administrador</title>
@@ -15,11 +25,13 @@
             gap: 30px;
             margin-top: 20px;
         }
+
         .config-sidebar {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
+
         .config-tab {
             padding: 12px 20px;
             border-radius: 8px;
@@ -32,22 +44,27 @@
             color: #64748b;
             border: 1px solid transparent;
         }
+
         .config-tab:hover {
             background: #f1f5f9;
         }
+
         .config-tab.active {
             background: white;
             color: var(--primary-color);
             border-color: var(--primary-color);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
+
         .tab-content {
             display: none;
             animation: fadeIn 0.3s ease;
         }
+
         .tab-content.active {
             display: block;
         }
+
         .danger-zone {
             margin-top: 40px;
             padding: 20px;
@@ -55,7 +72,12 @@
             border-radius: 10px;
             background: #fef2f2;
         }
-        .danger-zone h4 { color: #b91c1c; margin-bottom: 10px; }
+
+        .danger-zone h4 {
+            color: #b91c1c;
+            margin-bottom: 10px;
+        }
+
         .btn-danger {
             background: #ef4444;
             color: white;
@@ -64,18 +86,20 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        
+
         /* Estilização refinada para os formulários de configuração */
         .config-main {
             background: #fff;
             padding: 5px 20px;
         }
+
         .config-main .filter-group {
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
+
         .config-main label {
             font-weight: 600;
             font-size: 0.75rem;
@@ -83,6 +107,7 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
+
         .config-main input:not([type="checkbox"]) {
             padding: 12px 16px;
             border: 1px solid #e2e8f0;
@@ -91,12 +116,14 @@
             font-size: 0.95rem;
             transition: all 0.2s ease;
         }
+
         .config-main input:focus {
             background: #fff;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
             outline: none;
         }
+
         .config-main .checkbox-group {
             background: #f8fafc;
             padding: 16px;
@@ -108,10 +135,12 @@
             margin-bottom: 15px;
             transition: all 0.2s;
         }
+
         .config-main .checkbox-group:hover {
             border-color: var(--primary-color);
             background: #fff;
         }
+
         .config-main .checkbox-group label {
             text-transform: none;
             letter-spacing: normal;
@@ -119,11 +148,27 @@
             color: var(--text-dark);
             cursor: pointer;
         }
-        .config-main .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .config-main .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="dashboard-container">
         <aside class="sidebar">
@@ -133,13 +178,17 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="#dashboard" class="active" data-section="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+                    <li><a href="#dashboard" class="active" data-section="dashboard"><i
+                                data-lucide="layout-dashboard"></i> Dashboard</a></li>
                     <li><a href="#viagens" data-section="viagens"><i data-lucide="bus"></i> Gestão de Viagens</a></li>
                     <li><a href="#usuarios" data-section="usuarios"><i data-lucide="users"></i> Usuários</a></li>
                     <li><a href="#slides" data-section="slides"><i data-lucide="image"></i> Gestão de Slides</a></li>
-                    <li><a href="#relatorios" data-section="relatorios"><i data-lucide="bar-chart-2"></i> Relatórios</a></li>
-                    <li><a href="#configuracoes" data-section="configuracoes"><i data-lucide="settings"></i> Configurações</a></li>
-                    <li><a href="javascript:void(0)" onclick="logoutAdmin()"><i data-lucide="log-out"></i> Sair</a></li>
+                    <li><a href="#relatorios" data-section="relatorios"><i data-lucide="bar-chart-2"></i> Relatórios</a>
+                    </li>
+                    <li><a href="#configuracoes" data-section="configuracoes"><i data-lucide="settings"></i>
+                            Configurações</a></li>
+                    <li><a href="javascript:void(0)" onclick="logoutAdmin()"><i data-lucide="log-out"></i> Logout</a>
+                    </li>
                 </ul>
             </nav>
         </aside>
@@ -181,12 +230,13 @@
 
                 <div class="recent-bookings">
                     <h2>Últimas Reservas</h2>
-                    
+
                     <!-- Melhoria de UX: Campo de Busca -->
                     <div class="search-container" style="margin-bottom: 20px; display: flex; gap: 10px;">
-                        <i data-lucide="search" style="position: absolute; margin: 10px; color: var(--secondary-color);"></i>
-                        <input type="text" id="adminSearch" placeholder="Buscar por cliente ou destino..." 
-                               style="padding: 10px 10px 10px 35px; width: 100%; border-radius: 5px; border: 1px solid var(--border-color);">
+                        <i data-lucide="search"
+                            style="position: absolute; margin: 10px; color: var(--secondary-color);"></i>
+                        <input type="text" id="adminSearch" placeholder="Buscar por cliente ou destino..."
+                            style="padding: 10px 10px 10px 35px; width: 100%; border-radius: 5px; border: 1px solid var(--border-color);">
                     </div>
 
                     <div class="table-responsive">
@@ -214,7 +264,8 @@
             <section id="viagens" class="content-section">
                 <div class="section-header">
                     <h2>Gestão de Viagens</h2>
-                    <button class="btn-reserve" style="padding: 10px 20px;" onclick="openTripModal()"><i data-lucide="plus"></i> Adicionar Nova Rota</button>
+                    <button class="btn-reserve" style="padding: 10px 20px;" onclick="openTripModal()"><i
+                            data-lucide="plus"></i> Adicionar Nova Rota</button>
                 </div>
                 <div class="table-responsive card" style="padding: 20px;">
                     <table>
@@ -286,9 +337,12 @@
                 <div class="section-header">
                     <h2>Relatórios Financeiros</h2>
                     <div class="report-actions" style="display: flex; gap: 10px;">
-                        <input type="date" style="padding: 8px; border-radius: 5px; border: 1px solid var(--border-color);">
-                        <button class="btn-action btn-edit" onclick="exportar('PDF')"><i data-lucide="file-text"></i> PDF</button>
-                        <button class="btn-action btn-edit" onclick="exportar('Excel')"><i data-lucide="download"></i> Excel</button>
+                        <input type="date"
+                            style="padding: 8px; border-radius: 5px; border: 1px solid var(--border-color);">
+                        <button class="btn-action btn-edit" onclick="exportar('PDF')"><i data-lucide="file-text"></i>
+                            PDF</button>
+                        <button class="btn-action btn-edit" onclick="exportar('Excel')"><i data-lucide="download"></i>
+                            Excel</button>
                     </div>
                 </div>
                 <div class="summary-cards mini-cards">
@@ -318,12 +372,16 @@
                 <div class="card" style="padding: 25px;">
                     <div class="config-container">
                         <div class="config-sidebar">
-                            <div class="config-tab active" onclick="switchTab('profile')"><i data-lucide="user"></i> Perfil do Admin</div>
-                            <div class="config-tab" onclick="switchTab('fees')"><i data-lucide="calculator"></i> Taxas do Sistema</div>
-                            <div class="config-tab" onclick="switchTab('notifications')"><i data-lucide="bell"></i> Notificações</div>
-                            <div class="config-tab" onclick="switchTab('system')"><i data-lucide="database"></i> Dados do Sistema</div>
+                            <div class="config-tab active" onclick="switchTab('profile')"><i data-lucide="user"></i>
+                                Perfil do Admin</div>
+                            <div class="config-tab" onclick="switchTab('fees')"><i data-lucide="calculator"></i> Taxas
+                                do Sistema</div>
+                            <div class="config-tab" onclick="switchTab('notifications')"><i data-lucide="bell"></i>
+                                Notificações</div>
+                            <div class="config-tab" onclick="switchTab('system')"><i data-lucide="database"></i> Dados
+                                do Sistema</div>
                         </div>
-                        
+
                         <div class="config-main">
                             <div id="profile" class="tab-content active">
                                 <h3 style="margin-bottom: 25px; color: var(--text-dark);">Informações de Perfil</h3>
@@ -336,7 +394,8 @@
                                         <label>Email de Contacto</label>
                                         <input type="email" id="cfg-email" placeholder="Email">
                                     </div>
-                                    <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Atualizar Perfil</button>
+                                    <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Atualizar
+                                        Perfil</button>
                                 </form>
                             </div>
 
@@ -351,7 +410,8 @@
                                         <label>Moeda do Sistema</label>
                                         <input type="text" id="sys-currency" value="Kz" readonly>
                                     </div>
-                                    <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar Taxas</button>
+                                    <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar
+                                        Taxas</button>
                                 </form>
                             </div>
 
@@ -362,14 +422,18 @@
                                         <input type="checkbox" id="notif-new-booking">
                                         <label for="notif-new-booking">Alertar sobre novas reservas por e-mail</label>
                                     </div>
-                                    <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar Preferências</button>
+                                    <button type="submit" class="btn-reserve" style="padding: 10px 20px;">Salvar
+                                        Preferências</button>
                                 </form>
                             </div>
 
                             <div id="system" class="tab-content">
                                 <div class="danger-zone">
-                                    <h4 style="display: flex; align-items: center; gap: 8px;"><i data-lucide="alert-triangle"></i> Zona de Perigo</h4>
-                                    <p style="margin: 10px 0 20px 0; color: #64748b; font-size: 0.9rem;">Esta ação apagará todas as reservas, usuários e rotas criadas. Não é possível reverter.</p>
+                                    <h4 style="display: flex; align-items: center; gap: 8px;"><i
+                                            data-lucide="alert-triangle"></i> Zona de Perigo</h4>
+                                    <p style="margin: 10px 0 20px 0; color: #64748b; font-size: 0.9rem;">Esta ação
+                                        apagará todas as reservas, usuários e rotas criadas. Não é possível reverter.
+                                    </p>
                                     <button class="btn-danger" onclick="resetSystemData()">
                                         <i data-lucide="trash-2" size="16"></i> Limpar Todos os Dados
                                     </button>
@@ -441,7 +505,8 @@
                     <input type="text" id="slide-img" required placeholder="Ex: imagens/hero.jpg">
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-action" onclick="document.getElementById('slideModal').classList.remove('active')">Cancelar</button>
+                    <button type="button" class="btn-action"
+                        onclick="document.getElementById('slideModal').classList.remove('active')">Cancelar</button>
                     <button type="submit" class="btn-reserve" style="padding: 8px 20px;">Publicar no Slide</button>
                 </div>
             </form>
@@ -454,7 +519,8 @@
             <h3>Histórico de Reservas</h3>
             <div id="historyList" style="margin-top: 1rem; max-height: 300px; overflow-y: auto;"></div>
             <div class="modal-actions">
-                <button class="btn-action" onclick="document.getElementById('historyModal').classList.remove('active')">Fechar</button>
+                <button class="btn-action"
+                    onclick="document.getElementById('historyModal').classList.remove('active')">Fechar</button>
             </div>
         </div>
     </div>
@@ -472,7 +538,7 @@
         };
 
         // --- UTILITÁRIOS ---
-        
+
         const memoryStore = {
             ango_viagens: [],
             ango_reservas: [],
@@ -504,7 +570,7 @@
             if (targetSection) {
                 targetSection.classList.add('active');
                 if (targetLink) targetLink.classList.add('active');
-                
+
                 // Persistência: Salva a última seção visitada
                 sessionStorage.setItem('activeAdminSection', sectionId);
             }
@@ -525,7 +591,7 @@
             const tableBody = document.getElementById('tableBody');
             const reservas = getData('ango_reservas', initialReservas);
             const viagens = getData('ango_viagens', initialTrips);
-            
+
             // Atualizar Estatísticas do Dashboard
             document.getElementById('dash-total-reservas').innerText = reservas.length;
             document.getElementById('dash-total-viagens').innerText = viagens.length;
@@ -536,14 +602,14 @@
                 tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px; color: var(--secondary-color);">Nenhum dado registado</td></tr>';
                 return;
             }
-            
+
             // Atualizar Relatórios
-            if(document.getElementById('report-total-receita')) 
+            if (document.getElementById('report-total-receita'))
                 document.getElementById('report-total-receita').innerText = receitaTotal.toLocaleString('pt-AO') + " Kz";
 
             tableBody.innerHTML = reservas
-                .filter(r => r.cliente.toLowerCase().includes(filter.toLowerCase()) || 
-                             r.destino.toLowerCase().includes(filter.toLowerCase()))
+                .filter(r => r.cliente.toLowerCase().includes(filter.toLowerCase()) ||
+                    r.destino.toLowerCase().includes(filter.toLowerCase()))
                 .map(r => `
                     <tr>
                         <td>${r.id}</td>
@@ -639,231 +705,133 @@
             lucide.createIcons();
         }
 
-        // --- LÓGICA DE NEGÓCIO ---
+        // ... (as funções de renderização que você já tem: renderReservas, renderViagens, etc.)
 
-        // CRUD Slides
-        window.openSlideModal = () => {
-            document.getElementById('slideForm').reset();
-            document.getElementById('slideModal').classList.add('active');
+        // --- LÓGICA DE NEGÓCIO (COLE O CÓDIGO NOVO AQUI) ---
+
+        const storage = {
+            get: (key, fallback) => JSON.parse(localStorage.getItem(key)) || fallback,
+            set: (key, data) => localStorage.setItem(key, JSON.stringify(data))
         };
 
-        document.getElementById('slideForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const slides = getData('ango_slides', initialSlides);
-            const novo = {
-                id: Date.now(),
-                title: document.getElementById('slide-title').value,
-                text: document.getElementById('slide-text').value,
-                img: document.getElementById('slide-img').value
-            };
-            slides.push(novo);
-            saveData('ango_slides', slides);
-            renderSlides();
-            document.getElementById('slideModal').classList.remove('active');
-        });
+        // Inicialização de dados vinculada ao storage
+        let viagens = storage.get('ango_viagens', []);
+        let reservas = storage.get('ango_reservas', []);
+        let usuarios = storage.get('ango_users', []);
+        let slides = storage.get('ango_slides', []);
 
-        window.deletarSlide = (id) => {
-            if(confirm("Remover este slide do destaque inicial?")) {
-                const slides = getData('ango_slides', initialSlides).filter(s => s.id !== id);
-                saveData('ango_slides', slides);
-                renderSlides();
+        // --- GESTÃO DE VIAGENS (CRUD) ---
+        window.openTripModal = (id = null) => {
+            const modal = document.getElementById('tripModal');
+            const form = document.getElementById('tripForm');
+            form.reset();
+            document.getElementById('trip-id').value = id || '';
+
+            if (id) {
+                const trip = viagens.find(v => v.id == id);
+                if (trip) {
+                    document.getElementById('trip-origin').value = trip.rota.split(' - ')[0];
+                    document.getElementById('trip-dest').value = trip.rota.split(' - ')[1];
+                    document.getElementById('trip-company').value = trip.empresa;
+                    document.getElementById('trip-time').value = trip.horario;
+                    document.getElementById('trip-seats').value = trip.lugares;
+                    document.getElementById('trip-price').value = trip.preco.replace(' Kz', '');
+                    document.getElementById('tripModalTitle').innerText = "Editar Rota";
+                }
+            } else {
+                document.getElementById('tripModalTitle').innerText = "Adicionar Nova Rota";
             }
+            modal.classList.add('active');
         };
 
-        window.toggleUserStatus = (id) => {
-            if (!verifyAdminAction()) return;
-            const users = getData('ango_users', initialUsers);
-            const u = users.find(u => u.id === id);
-            u.status = u.status === 'ativo' ? 'suspenso' : 'ativo';
-            saveData('ango_users', users);
-            renderUsuarios();
+        // Função para fechar o modal
+        window.closeTripModal = () => {
+            document.getElementById('tripModal').classList.remove('active');
         };
-
-        window.deletarUsuario = (id) => {
-            if (!verifyAdminAction()) return;
-            if(confirm("Deseja excluir este usuário permanentemente?")) {
-                const users = getData('ango_users', initialUsers).filter(u => u.id !== id);
-                saveData('ango_users', users);
-                renderUsuarios();
-            }
-        };
-
-        // CRUD Viagens
-        window.openTripModal = () => {
-            document.getElementById('tripForm').reset();
-            document.getElementById('trip-id').value = '';
-            document.getElementById('tripModalTitle').innerText = 'Adicionar Nova Rota';
-            document.getElementById('tripModal').classList.add('active');
-        };
-
-        window.closeTripModal = () => document.getElementById('tripModal').classList.remove('active');
 
         document.getElementById('tripForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = document.getElementById('trip-id').value;
-            const viagens = getData('ango_viagens', initialTrips);
-            
             const tripData = {
                 id: id ? parseInt(id) : Date.now(),
                 rota: `${document.getElementById('trip-origin').value} - ${document.getElementById('trip-dest').value}`,
                 empresa: document.getElementById('trip-company').value,
                 horario: document.getElementById('trip-time').value,
-                lugares: `0/${document.getElementById('trip-seats').value}`,
+                lugares: document.getElementById('trip-seats').value,
                 preco: document.getElementById('trip-price').value + " Kz",
-                status: "active"
+                status: 'active'
             };
 
             if (id) {
-                const index = viagens.findIndex(v => v.id === parseInt(id));
-                viagens[index] = tripData;
+                viagens = viagens.map(v => v.id == id ? tripData : v);
             } else {
                 viagens.push(tripData);
             }
 
-            saveData('ango_viagens', viagens);
+            storage.set('ango_viagens', viagens);
             renderViagens();
+            renderReservas();
             closeTripModal();
         });
 
-        window.editTrip = (id) => {
-            const viagens = getData('ango_viagens', initialTrips);
-            const v = viagens.find(v => v.id === id);
-            const [origem, destino] = v.rota.split(' - ');
-            
-            document.getElementById('trip-id').value = v.id;
-            document.getElementById('trip-origin').value = origem;
-            document.getElementById('trip-dest').value = destino;
-            document.getElementById('trip-company').value = v.empresa;
-            document.getElementById('trip-time').value = v.horario;
-            document.getElementById('trip-price').value = v.preco.replace(' Kz', '');
-            
-            document.getElementById('tripModalTitle').innerText = 'Editar Rota';
-            document.getElementById('tripModal').classList.add('active');
-        };
-
-        window.deletarViagem = (id) => {
-            if(confirm("Tem certeza que deseja eliminar esta viagem? Ela desaparecerá do site do cliente.")) {
-                const viagens = getData('ango_viagens', initialTrips).filter(v => v.id !== id);
-                saveData('ango_viagens', viagens);
-                renderViagens();
-                renderReservas(); // Atualiza dashboard
-            }
-        };
-
-        // Gerenciamento de Status: Cicla entre os estados principais
+        // --- GESTÃO DE RESERVAS ---
         window.proximoStatus = (id) => {
-            let reservas = getData('ango_reservas', initialReservas);
-            const r = reservas.find(res => res.id === id);
-            if (r.status === 'pending') r.status = 'confirmed';
-            else if (r.status === 'confirmed') r.status = 'completed';
-            else r.status = 'pending';
-            saveData('ango_reservas', reservas);
+            const estados = ['pendente', 'confirmado', 'cancelado'];
+            reservas = reservas.map(r => {
+                if (r.id == id) {
+                    let idx = estados.indexOf(r.status);
+                    r.status = estados[(idx + 1) % estados.length];
+                }
+                return r;
+            });
+            storage.set('ango_reservas', reservas);
             renderReservas();
         };
 
         window.deletarReserva = (id) => {
-            if(confirm("Deseja excluir esta reserva?")) {
-                const reservas = getData('ango_reservas', initialReservas).filter(r => r.id !== id);
-                saveData('ango_reservas', reservas);
+            if (confirm("Excluir esta reserva?")) {
+                reservas = reservas.filter(r => r.id != id);
+                storage.set('ango_reservas', reservas);
                 renderReservas();
             }
         };
 
-        // Relatórios e Configurações
-        window.exportar = (type) => alert(`Gerando arquivo ${type}...\nO download começará em instantes.`);
-
-        async function applySpinner(btn, callback) {
-            const originalContent = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner"></span> Processando...`;
-            await new Promise(r => setTimeout(r, 1000)); // Simula delay
-            callback();
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
-        }
-
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            applySpinner(this.querySelector('button'), () => {
-                const settings = getData('ango_settings', {});
-                settings.profile = {
-                    name: document.getElementById('cfg-name').value,
-                    email: document.getElementById('cfg-email').value
-                };
-                saveData('ango_settings', settings);
-                document.getElementById('admin-name-display').innerText = settings.profile.name;
-                alert('Perfil atualizado!');
-            });
-        });
-
-        document.getElementById('financialForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            applySpinner(this.querySelector('button'), () => {
-                const settings = getData('ango_settings', {});
-                settings.financial = {
-                    serviceFee: document.getElementById('fee-service').value,
-                    currency: document.getElementById('sys-currency').value
-                };
-                saveData('ango_settings', settings);
-                alert('Configurações financeiras salvas!');
-            });
-        });
-
-        document.getElementById('notifForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            applySpinner(this.querySelector('button'), () => {
-                const settings = getData('ango_settings', {});
-                settings.notifications = {
-                    booking: document.getElementById('notif-new-booking').checked
-                };
-                saveData('ango_settings', settings);
-                alert('Preferências de notificação salvas!');
-            });
-        });
-
+        // --- CONFIGURAÇÕES (Tabs) ---
         window.switchTab = (tabId) => {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+
             document.getElementById(tabId).classList.add('active');
-            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            // O target do evento destaca o botão clicado
+            event.currentTarget.classList.add('active');
         };
 
+        // --- RESET DE SISTEMA ---
         window.resetSystemData = () => {
-            if(confirm("ATENÇÃO: Isso apagará todos os dados do sistema permanentemente. Continuar?")) {
-                alert("Os dados em memória foram resetados.");
-                window.location.reload();
+            if (confirm("ATENÇÃO: Isso apagará todos os dados de viagens, reservas e usuários permanentemente. Continuar?")) {
+                localStorage.clear();
+                location.reload();
             }
-        }
+        };
 
-        // Event Listeners
+        // --- BUSCA ---
         document.getElementById('adminSearch').addEventListener('input', (e) => {
             renderReservas(e.target.value);
         });
 
+        // Inicializar a visualização ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
-            // Inicializar tudo
-            renderReservas();
             renderViagens();
-            renderSlides();
+            renderReservas();
             renderUsuarios();
+            renderSlides();
+            lucide.createIcons();
 
-            // Carregar Configurações Centralizadas
-            const settings = getData('ango_settings', {
-                profile: { name: 'Super Admin', email: 'admin@angoreserva.com' },
-                financial: { commission: 5, serviceFee: 500, currency: 'Kz' },
-                notifications: { booking: true, agentLogin: false }
-            });
-            
-            document.getElementById('cfg-name').value = settings.profile.name;
-            document.getElementById('cfg-email').value = settings.profile.email;
-            document.querySelector('.user-profile span').innerText = settings.profile.name;
-            document.getElementById('fee-service').value = settings.financial.serviceFee;
-            document.getElementById('notif-new-booking').checked = settings.notifications.booking;
-            
-            // Persistência: Recupera a última seção aberta ao recarregar
+            // Verifica se havia uma seção ativa salva
             const lastSection = sessionStorage.getItem('activeAdminSection') || 'dashboard';
             showSection(lastSection);
         });
     </script>
 </body>
+
 </html>
