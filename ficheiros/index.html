@@ -148,7 +148,31 @@
         </div>
         <div class="footer-bottom">© 2026 Ango Reserva. Todos os direitos reservados.</div>
     </footer>
+    
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyC0Z...",
+  authDomain: "alras-d2251.firebaseapp.com",
+  projectId: "alras-d2251",
+  storageBucket: "alras-d2251.firebasestorage.app",
+  messagingSenderId: "419855488052",
+  appId: "1:419855488052:web:5b5f8239bbcea87e5c2661"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// tornar global
+window.db = db;
+window.ref = ref;
+window.set = set;
+window.get = get;
+window.child = child;
+</script>
+    
     <script>
         const state = {
     isLoggedIn: false,
